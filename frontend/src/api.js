@@ -336,6 +336,9 @@ export const api = {
   coachSession: (id) => request(`/coach/sessions/${id}`),
   coachMessage: (id, body) =>
     request(`/coach/sessions/${id}/messages`, { method: 'POST', body, timeout: LONG_TIMEOUT }),
+  closeCoach: (id) => request(`/coach/sessions/${id}/close`, { method: 'POST' }),
+  enqueueFlashcard: (goalId, body) =>
+    request(`/goals/${goalId}/flashcards/enqueue`, { method: 'POST', body }),
   coachVoice: (id, formData) =>
     request(`/coach/sessions/${id}/voice`, { method: 'POST', body: formData, timeout: 60000 }),
   testIntegrations: (force = false) => request(`/integrations/test?force=${force}`, { method: 'POST' }),
@@ -366,6 +369,9 @@ export const api = {
   campusBridge: () => request('/campus/bridge'),
   campusSync: () => request('/campus/bridge/sync', { method: 'POST' }),
   campusPush: (classId) => request('/campus/bridge/push', { method: 'POST', body: { class_id: classId } }),
+  classAssignments: (classId) => request(`/campus/classes/${classId}/assignments`),
+  assignPackage: (classId, slug) =>
+    request(`/campus/classes/${classId}/assignments`, { method: 'POST', body: { slug } }),
   campusLogs: () => request('/campus/bridge/logs'),
 
   vocabSession: (goalId, kpId, limit = 20) =>

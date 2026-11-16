@@ -177,6 +177,21 @@ def is_followup(question: str) -> bool:
     return len(text) <= 16 and any(cue in text for cue in _FOLLOWUP_CUES)
 
 
+def _followup_reason(question: str) -> str:
+    text = question or ""
+    if any(word in text for word in ("今天", "学什么", "任务", "安排", "干什么")):
+        return "这些任务按知识点权重、当前掌握度和距考试天数排出来，所以先做还没完成的。"
+    if any(word in text for word in ("薄弱", "弱项", "短板", "最差")):
+        return "它们的掌握度最低，先补这里，后面的练习才不会反复错在同一处。"
+    if any(word in text for word in ("几天", "倒计时", "多久")):
+        return "剩余天数会提高复习比重，离考试越近，复习会排得更密。"
+    if any(word in text for word in ("错题", "错因")):
+        return "错因决定补法：方法不会先看步骤，概念不清先回到定义。"
+    if any(word in text for word in ("复习", "间隔", "遗忘")):
+        return "答错会把复习间隔拉回 1 天，到期且不稳的内容要先复习。"
+    return "这个结论来自你已经产生的学习记录。"
+
+
 def rule_answer_with_history(
     db: Session,
     user: User,
@@ -187,20 +202,28 @@ def rule_answer_with_history(
 ) -> dict:
     """把追问接回上一问的事实，避免连续对话丢失上下文。"""
     prior = [item for item in (history or []) if str(item.get("text") or "").strip()]
-    base_question = (question or "").strip()
+    asked = (question or "").strip()
     follow = False
-    if is_followup(base_question) and prior:
-        last_user = ""
+    last_user = ""
+    last_coach = ""
+    if is_followup(asked) and prior:
         for item in reversed(prior):
-            if item.get("role") == "user" and str(item.get("text") or "").strip():
-                last_user = str(item["text"]).strip()
+            text = str(item.get("text") or "").strip()
+            if item.get("role") == "user" and text and not last_user:
+                last_user = text
+            if item.get("role") == "coach" and text and not last_coach:
+                last_coach = text
+            if last_user and last_coach:
                 break
         if last_user:
             follow = True
-            base_question = last_user
+    base_question = last_user if follow else asked
     answer, suggestions = build_rule_answer(db, user, goal, base_question, today)
     if follow:
-        answer = f"接着上一问「{base_question}」：{answer}"
+        brief = (last_coach or answer).strip().replace("\n", " ")
+        if len(brief) > 80:
+            brief = brief[:80] + "…"
+        answer = f"接着上一问「{last_user}」。上一轮是：{brief} {_followup_reason(last_user)}"
     return {
         "answer": answer,
         "source": "rule",

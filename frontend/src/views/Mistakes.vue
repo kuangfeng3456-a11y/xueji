@@ -1,11 +1,13 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, reactive, ref, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { api } from '../api'
 import { store, notify } from '../store'
 import { confirmAction } from '../confirm'
 import AppSelect from '../components/AppSelect.vue'
 import { cloudSpeechReady, startRecorder } from '../voiceInput'
 
+const router = useRouter()
 const points = ref([])
 const mistakes = ref([])
 const mastery = ref([])
@@ -242,6 +244,17 @@ async function dictateQuestion() {
   dictating.value = true
   dictateNote.value = '正在聆听，请说出题干'
   recognition.start()
+}
+
+async function keepMistakeCard() {
+  const kpId = result.value?.diagnosis?.kp_id
+  if (!kpId) return
+  try {
+    const data = await api.enqueueFlashcard(store.currentGoalId, { kp_id: kpId })
+    notify(data.detail || '已加入今天的复习')
+  } catch (e) {
+    notify(e.message, true)
+  }
 }
 
 async function submit() {
@@ -505,13 +518,16 @@ const mistakeStats = computed(() => {
         <div class="card-head">
           <div>
             <div class="card-title">本次归因结果</div>
-            <div class="card-sub">
-              由{{ result.diagnosis.engine === 'llm' ? '大模型语义判断' : '规则引擎' }}给出，类别经过枚举校验
-            </div>
+            <div class="card-sub">根据这道题的作答给出错因和补法</div>
           </div>
           <span class="tag" :class="`tag-${result.diagnosis.category}`">{{ result.diagnosis.category_label }}</span>
         </div>
         <div class="task-reason" style="margin-top: 0">{{ result.diagnosis.suggestion }}</div>
+        <div class="row" style="gap: 8px; margin-top: 10px; flex-wrap: wrap">
+          <button class="btn btn-sm" type="button" @click="router.push({ path: '/today', query: { tab: 'voice', q: `这道错题怎么补：${form.question}` } })">追问教练</button>
+          <button v-if="result.diagnosis.kp_id" class="btn btn-ghost btn-sm" type="button" @click="keepMistakeCard">加入今日复习</button>
+          <button class="btn btn-ghost btn-sm" type="button" @click="router.push('/today')">回到今日</button>
+        </div>
         <div v-if="result.diagnosis.mastery !== null" class="small muted" style="margin-top: 10px">
           该知识点掌握度已更新为 {{ Math.round(result.diagnosis.mastery * 100) }}%
         </div>

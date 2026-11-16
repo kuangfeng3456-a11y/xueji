@@ -42,6 +42,7 @@ const route = useRoute()
 const router = useRouter()
 const mode = ref(route.query.mode === 'shadow' ? 'shadow' : 'chat')
 const sessionId = ref(0)
+const sessions = ref([])
 const inputChannel = ref('语音输入可用文字代替')
 const outputChannel = ref('朗读会优先尝试云端语音，未开通时改用本机')
 let capture = null
@@ -55,6 +56,10 @@ const SHADOW_BANK = [
 ]
 
 const shadowIndex = ref(0)
+const ladder = ['听懂', '跟读', '遮词', '复述', '复习']
+const ladderIndex = ref(0)
+const revealed = ref([])
+const closingNote = ref(null)
 const shadowHeard = ref('')
 const shadowResult = ref(null)
 const shadowListening = ref(false)
@@ -255,8 +260,8 @@ async function scrollToBottom() {
   if (listRef.value) listRef.value.scrollTop = listRef.value.scrollHeight
 }
 
-function addMessage(role, text, source = 'rule', suggestions = []) {
-  messages.value.push({ role, text, source, suggestions, time: nowTime() })
+function addMessage(role, text, source = 'rule', suggestions = [], followup = false) {
+  messages.value.push({ role, text, source, suggestions, followup, time: nowTime() })
 }
 
 function showTime(index) {
@@ -283,25 +288,49 @@ async function ensureSession() {
   return created.id
 }
 
+const greeting = () => ({
+  role: 'coach',
+  text: '你好，我是学迹教练。你可以直接问我「今天学什么」「我的薄弱点」「还剩几天」，也可以点击麦克风说话。下一句可以接着问「为什么」。',
+  source: 'rule',
+  suggestions: ['今天学什么', '我的薄弱点', '还剩几天', '怎么复习'],
+  time: nowTime()
+})
+
+async function openSession(id) {
+  sessionId.value = id
+  const detail = await api.coachSession(id)
+  if (!detail.messages?.length) {
+    messages.value = [greeting()]
+    return
+  }
+  messages.value = detail.messages.map((item) => ({
+    role: item.role === 'user' ? 'user' : 'coach',
+    text: item.text,
+    source: item.source || 'rule',
+    suggestions: [],
+    followup: String(item.text || '').includes('接着上一问'),
+    time: clockFrom(item.created_at)
+  }))
+  await scrollToBottom()
+}
+
 async function loadHistory() {
   try {
     const listed = await api.coachSessions()
-    const latest = (listed.items || [])[0]
+    sessions.value = listed.items || []
+    const latest = sessions.value[0]
     if (!latest) return
-    sessionId.value = latest.id
-    const detail = await api.coachSession(latest.id)
-    if (!detail.messages?.length) return
-    messages.value = detail.messages.map((item) => ({
-      role: item.role === 'user' ? 'user' : 'coach',
-      text: item.text,
-      source: item.source || 'rule',
-      suggestions: [],
-      time: clockFrom(item.created_at)
-    }))
-    await scrollToBottom()
+    await openSession(latest.id)
   } catch (e) {
     /* 没有历史时保留开场白 */
   }
+}
+
+async function startNewSession() {
+  const created = await api.createCoachSession({ goal_id: store.currentGoalId || null, title: '新的对话' })
+  sessions.value = [created, ...sessions.value.filter((item) => item.id !== created.id)]
+  sessionId.value = created.id
+  messages.value = [greeting()]
 }
 
 function useWebSpeech(onText) {
@@ -436,6 +465,34 @@ function startShadowListening() {
   recognition.start()
 }
 
+function retellToCoach() {
+  mode.value = 'chat'
+  question.value = `请听我复述：${currentShadow.value?.text || ''}`
+  ladderIndex.value = Math.max(ladderIndex.value, 3)
+}
+
+async function keepHardPoint() {
+  if (!store.currentGoalId) {
+    notify('请先设定考试目标', true)
+    return
+  }
+  try {
+    const data = await api.enqueueFlashcard(store.currentGoalId, { name: currentShadow.value?.topic || '' })
+    notify(data.detail || '已加入今天的复习')
+  } catch (e) {
+    notify(e.message, true)
+  }
+}
+
+async function finishTalk() {
+  try {
+    const id = await ensureSession()
+    closingNote.value = await api.closeCoach(id)
+  } catch (e) {
+    notify(e.message, true)
+  }
+}
+
 function nextShadow() {
   const total = shadowLines.value.length || 1
   shadowIndex.value = (shadowIndex.value + 1) % total
@@ -453,7 +510,7 @@ function applySessionReply(transcript, data) {
   question.value = ''
   showQuick.value = false
   showEmoji.value = false
-  addMessage('coach', data.answer, data.source || 'rule', data.suggestions || [])
+  addMessage('coach', data.answer, data.source || 'rule', data.suggestions || [], Boolean(data.followup))
   speak(data.answer)
 }
 
@@ -469,7 +526,9 @@ async function ask(text) {
     const id = await ensureSession()
     const saved = await api.coachMessage(id, { text: content, goal_id: store.currentGoalId || null })
     addMessage('user', content, 'user')
-    addMessage('coach', saved.answer, saved.source || 'rule', saved.suggestions || [])
+    addMessage('coach', saved.answer, saved.source || 'rule', saved.suggestions || [], Boolean(saved.followup))
+    const listed = await api.coachSessions().catch(() => null)
+    if (listed?.items) sessions.value = listed.items
     speak(saved.answer)
   } catch (e) {
     addMessage('coach', `抱歉，暂时没能回答：${e.message}`, 'error', ['今天学什么', '我的薄弱点'])
@@ -559,6 +618,10 @@ function closePanels() {
 }
 
 onMounted(() => {
+  if (route.query.q) {
+    mode.value = 'chat'
+    question.value = String(route.query.q)
+  }
   loadHistory()
   cloudSpeechReady(api).then((ready) => {
     inputChannel.value = ready ? '可使用云端语音识别' : '云端语音识别未开通，将使用本机或文字'
@@ -590,19 +653,43 @@ onBeforeUnmount(() => {
         <button type="button" :class="{ on: mode === 'chat' }" @click="setMode('chat')">问答</button>
         <button type="button" :class="{ on: mode === 'shadow' }" @click="setMode('shadow')">跟读评测</button>
       </div>
+      <button v-if="mode === 'chat'" class="wx-header-btn" type="button" @click="finishTalk">结束本轮</button>
       <button v-if="speaking" class="wx-header-btn" @click="stopSpeaking">停止朗读</button>
     </div>
+    <div v-if="closingNote" class="wx-note">
+      <div v-for="(line, index) in closingNote.takeaways" :key="index">{{ line }}</div>
+      <div>{{ closingNote.next_practice }}</div>
+    </div>
     <p v-if="mode === 'chat'" class="wx-note">会记住这次对话里的追问。{{ inputChannel }}。{{ outputChannel }}。</p>
+    <div v-if="mode === 'chat'" class="row" style="gap: 8px; padding: 0 12px 8px; flex-wrap: wrap">
+      <button type="button" class="btn btn-ghost btn-sm" @click="startNewSession">新的对话</button>
+      <button
+        v-for="item in sessions.slice(0, 6)"
+        :key="item.id"
+        type="button"
+        class="btn btn-sm"
+        :class="{ 'btn-ghost': item.id !== sessionId }"
+        @click="openSession(item.id)"
+      >
+        {{ item.title || '未命名对话' }}
+      </button>
+    </div>
 
     <div v-if="mode === 'shadow'" class="shadow-lab">
-      <p class="shadow-lead">先听标准音，再开口跟读。句子优先取自今天的课程和错题。</p>
+      <p class="shadow-lead">同一句内容按顺序练习：先听懂，再跟读，再遮词，再向教练复述，最后把难点放进今天的复习。</p>
+      <div class="row" style="gap: 6px; flex-wrap: wrap; margin-bottom: 8px">
+        <span v-for="(label, index) in ladder" :key="label" class="tag" :class="index === ladderIndex ? 'tag-study' : index < ladderIndex ? 'tag-review' : 'tag-pending'">
+          {{ index + 1 }}. {{ label }}
+        </span>
+      </div>
       <div class="shadow-kicker">{{ currentShadow.source || '通用练习' }} · {{ currentShadow.topic }}</div>
       <div class="shadow-text">
         <span
           v-for="(word, index) in shadowWords"
           :key="index"
           :class="{ on: spokenWord === index && word.spoken }"
-        >{{ word.raw }}</span>
+          @click="revealed = revealed.includes(index) ? revealed.filter((item) => item !== index) : [...revealed, index]"
+        >{{ ladderIndex >= 2 && word.spoken && !revealed.includes(index) ? '▢' : word.raw }}</span>
       </div>
       <div class="shadow-tip">{{ currentShadow.tip }}</div>
       <div class="shadow-actions">
@@ -611,6 +698,11 @@ onBeforeUnmount(() => {
           {{ shadowListening ? '正在听你说...' : '开始跟读' }}
         </button>
         <button class="btn btn-ghost" type="button" @click="nextShadow">下一句</button>
+      </div>
+      <div class="row" style="gap: 8px; flex-wrap: wrap; margin-top: 8px">
+        <button v-if="ladderIndex < 4" class="btn btn-sm" type="button" @click="ladderIndex += 1">这一步完成，下一步</button>
+        <button v-if="ladderIndex >= 3" class="btn btn-sm" type="button" @click="retellToCoach">向教练复述</button>
+        <button v-if="ladderIndex >= 4" class="btn btn-sm btn-ghost" type="button" @click="keepHardPoint">把这句难点放入今日复习</button>
       </div>
       <div v-if="shadowHeard" class="shadow-heard">识别结果：{{ shadowHeard }}</div>
       <div v-if="shadowResult" class="shadow-result">
@@ -628,6 +720,7 @@ onBeforeUnmount(() => {
           <div class="wx-avatar" :class="message.role">{{ message.role === 'user' ? '我' : '迹' }}</div>
           <div class="wx-bubble-wrap">
             <div class="wx-bubble">{{ message.text }}</div>
+            <div v-if="message.followup" class="wx-msg-meta">接着上一轮继续</div>
             <div v-if="message.role === 'coach'" class="wx-msg-meta">
               <span v-if="message.source === 'llm'" class="wx-tag wx-tag-llm">AI</span>
               <span v-else-if="message.source === 'rule'" class="wx-tag wx-tag-rule">学习记录</span>

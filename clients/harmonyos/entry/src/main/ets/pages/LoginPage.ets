@@ -11,7 +11,8 @@ struct LoginPage {
   @State nickname: string = '';
   @State role: string = 'student';
   @State registerMode: boolean = false;
-  @State hint: string = '';
+  @State apiBase: string = 'http://127.0.0.1:8000';
+  @State hint: string = '第一次使用请先确认下面的服务地址，再登录。真机请改成电脑的局域网地址。';
   @State busy: boolean = false;
   private client: ApiClient | null = null;
 
@@ -23,9 +24,19 @@ struct LoginPage {
     const context = getContext(this) as common.UIAbilityContext;
     this.client = new ApiClient(context);
     await this.client.load();
+    this.apiBase = this.client.base;
     if (this.client.token.length > 0) {
       router.replaceUrl({ url: 'pages/TodayPage' });
     }
+  }
+
+  async saveBase(): Promise<void> {
+    if (!this.client) {
+      return;
+    }
+    await this.client.saveBase(this.apiBase);
+    this.apiBase = this.client.base;
+    this.hint = '已保存服务地址';
   }
 
   async submit(): Promise<void> {
@@ -37,6 +48,7 @@ struct LoginPage {
       return;
     }
     this.busy = true;
+    await this.saveBase();
     this.hint = '';
     try {
       const path = this.registerMode ? '/auth/register' : '/auth/login';
@@ -77,7 +89,16 @@ struct LoginPage {
       Text('自适应学习教练')
         .fontSize(16)
         .fontColor('#5C564C')
-        .margin({ top: 8, bottom: 28 })
+        .margin({ top: 8, bottom: 16 })
+      Text('服务地址')
+        .fontSize(13)
+        .fontColor('#5C564C')
+      TextInput({ text: this.apiBase, placeholder: 'http://127.0.0.1:8000' })
+        .width('100%')
+        .margin({ top: 6, bottom: 16 })
+        .onChange((value: string) => {
+          this.apiBase = value;
+        })
 
       TextInput({ text: this.username, placeholder: '用户名' })
         .width('100%')

@@ -268,7 +268,7 @@ async function apply(packageItem) {
   applying.value = packageItem.slug
   try {
     const result = await api.applySkillPackage(packageItem.slug, store.currentGoalId)
-    notify(`已从「${result.package}」导入 ${result.created} 个知识点`)
+    notify(`已导入「${result.package}」。回到今日，课程和练习会按这些知识点安排。`)
     detail.value = null
     await load()
     store.goals = await api.goals()

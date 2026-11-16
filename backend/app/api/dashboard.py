@@ -14,19 +14,23 @@ from ..database import get_db
 from ..deps import get_current_user, get_user_goal
 from ..models import DailyReview, Goal, KnowledgePoint, Mastery, Mistake, ReplanLog, Task, User
 from ..schemas import (
+    AssignmentBrief,
     AutoAdjustOut,
     DailyReviewOut,
     DashboardOut,
     GoalOut,
+    LoopStepOut,
     MasteryOut,
     MistakeOut,
     ReplanChange,
     RhythmOut,
     UserOut,
+    WeekMarkOut,
     DailyReviewIn,
 )
 from ..services.auto_schedule import auto_adjust_today
 from ..services.planner import task_to_dict
+from ..services.practice_loop import loop_status
 from ..services.rhythm import build_rhythm
 from ..services.rules import calc_streak, days_left
 from .goals import build_goal_out
@@ -102,6 +106,15 @@ def _today_review(db: Session, user_id: int, goal_id: int, day_value: date):
 
 
 
+def _loop_fields(status: dict) -> dict:
+    return {
+        "loop_steps": [LoopStepOut(**item) for item in status.get("loop_steps") or []],
+        "week_activity": [WeekMarkOut(**item) for item in status.get("week_activity") or []],
+        "next_step": status.get("next_step") or "",
+        "assignments": [AssignmentBrief(**item) for item in status.get("assignments") or []],
+    }
+
+
 def _recent_changes(db: Session, user_id: int, goal_id: int) -> List[ReplanChange]:
     log = db.scalar(
         select(ReplanLog)
@@ -147,6 +160,7 @@ async def dashboard(
             latest_changes=[],
             auto_adjust=None,
             daily_review=None,
+            **_loop_fields(loop_status(db, user, None, today)),
             server_date=today,
         )
 
@@ -257,6 +271,7 @@ async def dashboard(
         rhythm=RhythmOut(**build_rhythm(db, user.id, goal.id, today=today)),
         auto_adjust=auto_adjust,
         daily_review=_today_review(db, user.id, goal.id, today),
+        **_loop_fields(loop_status(db, user, goal, today)),
         server_date=today,
     )
 

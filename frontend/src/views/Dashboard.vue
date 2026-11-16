@@ -477,6 +477,32 @@ watch(
       </dl>
     </section>
 
+    <section v-if="data.loop_steps?.length" class="card">
+      <div class="card-head">
+        <div>
+          <div class="card-title">今天还差这一环</div>
+          <div class="card-sub">{{ data.next_step }}</div>
+        </div>
+      </div>
+      <div class="row" style="gap: 8px; flex-wrap: wrap; margin-top: 10px">
+        <span v-for="step in data.loop_steps" :key="step.key" class="tag" :class="step.done ? 'tag-review' : 'tag-pending'">
+          {{ step.label }}{{ step.done ? '已完成' : '未完成' }}
+        </span>
+      </div>
+      <div class="row" style="gap: 8px; margin-top: 12px; align-items: flex-end">
+        <div v-for="day in data.week_activity || []" :key="day.day" style="text-align: center">
+          <div :style="{ width: '18px', height: Math.max(8, day.done * 10) + 'px', background: day.done ? '#1F6B4A' : '#E7E1D6', borderRadius: '4px' }"></div>
+          <div class="small muted">{{ String(day.day).slice(5) }}</div>
+        </div>
+      </div>
+      <p v-if="data.weak_points?.length" class="small" style="margin-top: 10px">
+        当前较弱的知识点：{{ data.weak_points.slice(0, 3).map((item) => item.kp_name).join('、') }}
+      </p>
+      <div v-if="data.assignments?.length" class="stack" style="margin-top: 10px">
+        <div v-for="item in data.assignments" :key="item.id" class="task-reason">{{ item.hint }}</div>
+      </div>
+    </section>
+
     <section class="demo-loop" aria-label="今日学习闭环">
       <header class="demo-loop-head">
         <div>
@@ -500,29 +526,38 @@ watch(
           </router-link>
         </li>
         <li>
-          <router-link to="/plan?tab=exam">
+          <router-link to="/today?tab=quiz">
             <span class="demo-idx">02</span>
             <span class="demo-copy">
               <strong>随堂测</strong>
-              <em>看完立刻出 4 题，错的进入错题本</em>
-            </span>
-          </router-link>
-        </li>
-        <li>
-          <router-link to="/today?tab=voice&mode=shadow">
-            <span class="demo-idx">03</span>
-            <span class="demo-copy">
-              <strong>口语跟读</strong>
-              <em>听标准音并跟读，当场看到发音反馈</em>
+              <em>对着本节知识点出题，错的进入错题本</em>
             </span>
           </router-link>
         </li>
         <li>
           <router-link to="/practice?tab=mistakes">
+            <span class="demo-idx">03</span>
+            <span class="demo-copy">
+              <strong>拍题或开口</strong>
+              <em>拍照记错题，或去口语跟读</em>
+            </span>
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/today?tab=voice">
             <span class="demo-idx">04</span>
             <span class="demo-copy">
+              <strong>追问教练</strong>
+              <em>接着问为什么，教练会记住上一轮</em>
+            </span>
+          </router-link>
+        </li>
+        <li>
+          <router-link to="/practice?tab=report">
+            <span class="demo-idx">05</span>
+            <span class="demo-copy">
               <strong>复盘</strong>
-              <em>查看错因与掌握度变化</em>
+              <em>看完成情况、错因和下一步</em>
             </span>
           </router-link>
         </li>

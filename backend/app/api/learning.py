@@ -141,6 +141,8 @@ async def create_mistake(
             "suggestion": suggestion,
             "engine": engine,
             "mastery": mastery_value,
+            "kp_id": point.id if point else None,
+            "kp_name": point.name if point else None,
         },
         "replan": None,
     }

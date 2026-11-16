@@ -155,6 +155,10 @@ def ensure_schema() -> None:
         },
     )
     add_columns(
+        "coach_sessions",
+        {"closing": "TEXT"},
+    )
+    add_columns(
         "tasks",
         {
             "skip_reason": "VARCHAR(255)",

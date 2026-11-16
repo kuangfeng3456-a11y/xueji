@@ -17,6 +17,11 @@ interface TaskItem {
 struct TodayPage {
   @State examName: string = '还没有考试目标';
   @State coach: string = '正在读取今天的安排...';
+  @State streak: string = '0';
+  @State dueCards: string = '0';
+  @State daysLeft: string = '';
+  @State nextStep: string = '';
+  @State loopText: string = '';
   @State tasks: TaskItem[] = [];
   @State hint: string = '';
   private client: ApiClient | null = null;
@@ -46,9 +51,28 @@ struct TodayPage {
       const goalId = readField(goal, 'id');
       await this.client.saveGoal(goalId);
       this.examName = readField(goal, 'exam_name');
+      this.daysLeft = readField(goal, 'days_left');
       const boardText = await this.client.request(http.RequestMethod.GET, '/dashboard?goal_id=' + goalId);
       const board = JSON.parse(boardText) as ESObject;
       this.coach = readField(board, 'coach_message');
+      this.streak = readField(board, 'streak') || '0';
+      this.nextStep = readField(board, 'next_step');
+      const steps = board['loop_steps'] as Array<ESObject>;
+      const labels: string[] = [];
+      if (steps) {
+        for (let i = 0; i < steps.length; i++) {
+          const done = steps[i]['done'];
+          labels.push(readField(steps[i], 'label') + (done === true ? '已完成' : '未完成'));
+        }
+      }
+      this.loopText = labels.join(' · ');
+      try {
+        const deckText = await this.client.request(http.RequestMethod.GET, '/goals/' + goalId + '/flashcards');
+        const deck = JSON.parse(deckText) as ESObject;
+        this.dueCards = readField(deck, 'due_count') || '0';
+      } catch (cardErr) {
+        this.dueCards = '0';
+      }
       const rawTasks = board['today_tasks'] as Array<ESObject>;
       const next: TaskItem[] = [];
       if (rawTasks) {
@@ -93,14 +117,57 @@ struct TodayPage {
           Text('今日')
             .fontSize(28)
             .fontWeight(FontWeight.Bold)
-          Text(this.examName)
+          Text(this.examName + (this.daysLeft.length > 0 ? ' · 还剩 ' + this.daysLeft + ' 天' : ''))
             .fontSize(14)
             .fontColor('#5C564C')
+            .margin({ top: 6 })
+          Text('已连续学习 ' + this.streak + ' 天 · 待复习闪卡 ' + this.dueCards + ' 张')
+            .fontSize(14)
             .margin({ top: 6, bottom: 12 })
+          Text(this.nextStep)
+            .fontSize(15)
+            .fontWeight(FontWeight.Medium)
+            .margin({ bottom: 6 })
+          if (this.loopText.length > 0) {
+            Text(this.loopText)
+              .fontSize(13)
+              .fontColor('#5C564C')
+              .margin({ bottom: 8 })
+          }
+          Text('今日重点')
+            .fontSize(13)
+            .fontColor('#5C564C')
           Text(this.coach)
             .fontSize(15)
             .lineHeight(22)
-            .margin({ bottom: 16 })
+            .margin({ bottom: 8 })
+          Text('建议顺序：完成下面的任务，再去拍题或口语，最后看复盘。随堂测可在网页端对着本节知识点进行。')
+            .fontSize(13)
+            .fontColor('#5C564C')
+            .margin({ bottom: 12 })
+          Row({ space: 8 }) {
+            Button('拍题')
+              .layoutWeight(1)
+              .backgroundColor('#1F6B4A')
+              .onClick(() => {
+                router.replaceUrl({ url: 'pages/CapturePage' });
+              })
+            Button('口语')
+              .layoutWeight(1)
+              .backgroundColor('#1F6B4A')
+              .onClick(() => {
+                router.replaceUrl({ url: 'pages/CoachPage' });
+              })
+            Button('复盘')
+              .layoutWeight(1)
+              .backgroundColor('#E7E1D6')
+              .fontColor('#1C1915')
+              .onClick(() => {
+                router.replaceUrl({ url: 'pages/ReviewPage' });
+              })
+          }
+          .width('100%')
+          .margin({ bottom: 16 })
           if (this.tasks.length === 0) {
             Text('今天还没有任务。可以在网页端生成计划后再回来看。')
               .fontSize(14)

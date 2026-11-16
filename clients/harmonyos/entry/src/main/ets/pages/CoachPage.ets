@@ -15,6 +15,11 @@ interface ChatLine {
   text: string;
 }
 
+interface SessionChip {
+  id: string;
+  title: string;
+}
+
 @Entry
 @Component
 struct CoachPage {
@@ -22,7 +27,9 @@ struct CoachPage {
   @State draft: string = '';
   @State note: string = '连续提问会记住本轮上下文。云端语音未开通时，请使用本机听写或文字。';
   @State sessionId: string = '';
+  @State sessions: SessionChip[] = [];
   @State busy: boolean = false;
+  @State closing: string = '';
   private client: ApiClient | null = null;
 
   aboutToAppear(): void {
@@ -40,8 +47,16 @@ struct CoachPage {
     try {
       const listed = JSON.parse(await this.client.request(http.RequestMethod.GET, '/coach/sessions')) as ESObject;
       const items = listed['items'] as Array<ESObject>;
-      if (items && items.length > 0) {
-        this.sessionId = readField(items[0], 'id');
+      const chips: SessionChip[] = [];
+      if (items) {
+        for (let i = 0; i < items.length && i < 6; i++) {
+          const title = readField(items[i], 'title');
+          chips.push({ id: readField(items[i], 'id'), title: title.length > 0 ? title : '未命名对话' });
+        }
+      }
+      this.sessions = chips;
+      if (chips.length > 0) {
+        this.sessionId = chips[0].id;
         await this.loadMessages();
         return;
       }
@@ -62,6 +77,16 @@ struct CoachPage {
     const text = await this.client.request(http.RequestMethod.POST, '/coach/sessions', body);
     const data = JSON.parse(text) as ESObject;
     this.sessionId = readField(data, 'id');
+    const chip: SessionChip = { id: this.sessionId, title: '新的对话' };
+    const next: SessionChip[] = [chip];
+    for (let i = 0; i < this.sessions.length && next.length < 6; i++) {
+      if (this.sessions[i].id !== chip.id) {
+        next.push(this.sessions[i]);
+      }
+    }
+    this.sessions = next;
+    this.lines = [];
+    this.note = '这是一轮新的对话。可以先问今天学什么，再追问为什么。';
   }
 
   async loadMessages(): Promise<void> {
@@ -82,6 +107,29 @@ struct CoachPage {
       }
     }
     this.lines = next;
+  }
+
+  async finishTalk(): Promise<void> {
+    if (!this.client || this.sessionId.length === 0) {
+      this.note = '先开始一轮对话，再结束。';
+      return;
+    }
+    try {
+      const text = await this.client.request(http.RequestMethod.POST, '/coach/sessions/' + this.sessionId + '/close', '{}');
+      const data = JSON.parse(text) as ESObject;
+      const lines = data['takeaways'] as Array<string>;
+      let summary = '';
+      if (lines) {
+        for (let i = 0; i < lines.length && i < 3; i++) {
+          summary = summary + lines[i] + '\n';
+        }
+      }
+      summary = summary + readField(data, 'next_practice');
+      this.closing = summary;
+      this.note = '本轮已结束。下面是要点和下一步。';
+    } catch (err) {
+      this.note = (err as Error).message;
+    }
   }
 
   async sendText(content: string): Promise<void> {
@@ -282,10 +330,35 @@ struct CoachPage {
           Text('口语教练')
             .fontSize(28)
             .fontWeight(FontWeight.Bold)
+          Text('同一内容可以先听、再跟读、再遮住关键词，然后在这里复述。结束后会给出不超过三条要点。')
+            .fontSize(13)
+            .fontColor('#5C564C')
+            .margin({ top: 6 })
           Text(this.note)
             .fontSize(13)
             .fontColor('#5C564C')
-            .margin({ top: 8, bottom: 12 })
+            .margin({ top: 8, bottom: 8 })
+          Flex({ wrap: FlexWrap.Wrap }) {
+            Button('新的对话')
+              .backgroundColor('#E7E1D6')
+              .fontColor('#1C1915')
+              .margin({ right: 8, bottom: 8 })
+              .onClick(() => {
+                this.openSession();
+              })
+            ForEach(this.sessions, (item: SessionChip) => {
+              Button(item.title)
+                .backgroundColor(item.id === this.sessionId ? '#1F6B4A' : '#E7E1D6')
+                .fontColor(item.id === this.sessionId ? '#FFFFFF' : '#1C1915')
+                .margin({ right: 8, bottom: 8 })
+                .onClick(() => {
+                  this.sessionId = item.id;
+                  this.loadMessages();
+                })
+            }, (item: SessionChip) => item.id)
+          }
+          .width('100%')
+          .margin({ bottom: 12 })
           if (this.lines.length === 0) {
             Text('可以直接问「今天学什么」，下一句再说「为什么」，教练会接上一次的回答。')
               .fontSize(14)
@@ -324,6 +397,19 @@ struct CoachPage {
           }
           .width('100%')
           .margin({ top: 8 })
+          if (this.closing.length > 0) {
+            Text(this.closing)
+              .fontSize(14)
+              .margin({ top: 8 })
+          }
+          Button('结束本轮')
+            .width('100%')
+            .margin({ top: 8 })
+            .backgroundColor('#E7E1D6')
+            .fontColor('#1C1915')
+            .onClick(() => {
+              this.finishTalk();
+            })
           Button('上传录音做云端识别')
             .width('100%')
             .margin({ top: 8 })

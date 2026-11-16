@@ -80,6 +80,7 @@ onMounted(load)
 
     <div v-if="report" class="card">
       <div class="card-title">对比结果</div>
+      <p>{{ report.summary }}</p>
       <p class="small muted">{{ report.note }}</p>
       <div class="table-wrap" style="margin-top: 12px">
         <table class="data-table">
@@ -87,9 +88,11 @@ onMounted(load)
             <tr>
               <th>班级</th>
               <th>人数</th>
-              <th>近 7 天完成率</th>
-              <th>最薄弱知识点</th>
+              <th>完成率</th>
+              <th>平均掌握</th>
+              <th>弱项</th>
               <th>需关注</th>
+              <th>数据</th>
             </tr>
           </thead>
           <tbody>
@@ -97,15 +100,14 @@ onMounted(load)
               <td>{{ item.name }}</td>
               <td>{{ item.member_count }}</td>
               <td>{{ percent(item.completion_rate) }}</td>
+              <td>{{ percent(item.avg_mastery) }}</td>
               <td>{{ item.top_weak || '暂无' }}</td>
               <td>{{ item.watch_count }}</td>
+              <td>{{ item.basis === 'sample' ? '样例对照' : '学习记录' }}</td>
             </tr>
           </tbody>
         </table>
       </div>
-      <p v-if="report.lowest" class="small" style="margin-top: 12px">
-        完成率较低的是「{{ report.lowest.name }}」。
-      </p>
     </div>
   </div>
 </template>

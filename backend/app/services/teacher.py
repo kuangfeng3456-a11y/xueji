@@ -123,6 +123,9 @@ def teacher_dashboard(db: Session, school_class, today: date = None) -> Dict:
     if not suggestions:
         suggestions.append("当前班级数据较少，建议先完成一次诊断练习。")
 
+    flat = [value for values in per_member.values() for value in values]
+    avg_mastery = round(sum(flat) / len(flat), 3) if flat else 0.0
+
     return {
         "class_id": school_class.id,
         "class_name": school_class.name,
@@ -136,6 +139,7 @@ def teacher_dashboard(db: Session, school_class, today: date = None) -> Dict:
         },
         "watch_list": watch_list,
         "completion_rate": rate,
+        "avg_mastery": avg_mastery,
         "suggestions": suggestions,
         "note": "仅展示授权班级的聚合数据；个体名单仅班级创建者可见。",
     }

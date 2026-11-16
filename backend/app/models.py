@@ -996,6 +996,7 @@ class CoachSession(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     goal_id: Mapped[Optional[int]] = mapped_column(ForeignKey("goals.id"), nullable=True, index=True)
     title: Mapped[str] = mapped_column(String(128), default="语音教练")
+    closing: Mapped[str] = mapped_column(Text, default="")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
@@ -1038,4 +1039,17 @@ class AcademicSyncLog(Base):
     direction: Mapped[str] = mapped_column(String(16))
     status: Mapped[str] = mapped_column(String(16), default="ok")
     summary: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class ClassAssignment(Base):
+    """教师从已通过审核的学科包布置给班级的练习。"""
+
+    __tablename__ = "class_assignments"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    class_id: Mapped[int] = mapped_column(ForeignKey("classes.id"), index=True)
+    package_slug: Mapped[str] = mapped_column(String(64), index=True)
+    title: Mapped[str] = mapped_column(String(128))
+    created_by: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

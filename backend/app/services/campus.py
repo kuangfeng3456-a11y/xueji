@@ -28,6 +28,31 @@ def _invite_code(db: Session) -> str:
             return code
     raise ValueError("邀请码生成失败，请重试")
 
+SAMPLE_PROFILES = {
+    "sample-cs-2024-1": {
+        "completion_rate": 0.82,
+        "avg_mastery": 0.74,
+        "top_weak": "指针与数组",
+        "watch_count": 3,
+        "suggestions": ["先集体讲指针与数组，再让掌握较好的同学带一次练习。"],
+    },
+    "sample-cs-2024-2": {
+        "completion_rate": 0.51,
+        "avg_mastery": 0.43,
+        "top_weak": "TCP 与 UDP",
+        "watch_count": 8,
+        "suggestions": ["完成率偏低，建议先把每日任务收到能做完的长度。"],
+    },
+    "sample-ee-2023-1": {
+        "completion_rate": 0.66,
+        "avg_mastery": 0.58,
+        "top_weak": "电磁感应",
+        "watch_count": 5,
+        "suggestions": ["电磁感应是当前弱项，可以安排一次集中纠错。"],
+    },
+}
+
+
 SAMPLE_ROSTER = [
     {
         "external_id": "sample-cs-2024-1",
@@ -163,18 +188,35 @@ def owned_classes(db: Session, user: User) -> List[SchoolClass]:
 def _class_metrics(db: Session, school_class: SchoolClass) -> dict:
     board = teacher_dashboard(db, school_class)
     weak = board["weak_points"][0]["name"] if board["weak_points"] else ""
-    return {
+    has_learning_data = board["member_count"] > 0 and bool(board["weak_points"] or board["completion_rate"])
+    metrics = {
         "class_id": school_class.id,
         "name": school_class.name,
         "invite_code": school_class.invite_code,
         "external_ref": school_class.external_ref or "",
         "member_count": board["member_count"],
         "completion_rate": board["completion_rate"],
+        "avg_mastery": board.get("avg_mastery") or 0.0,
         "watch_count": len(board["watch_list"]),
         "top_weak": weak,
         "suggestions": board["suggestions"][:2],
-        "has_learning_data": board["member_count"] > 0 and bool(board["weak_points"] or board["completion_rate"]),
+        "has_learning_data": has_learning_data,
+        "basis": "live",
     }
+    profile = SAMPLE_PROFILES.get(school_class.external_ref or "")
+    if has_learning_data or not profile:
+        return metrics
+    metrics.update(
+        {
+            "completion_rate": profile["completion_rate"],
+            "avg_mastery": profile["avg_mastery"],
+            "watch_count": profile["watch_count"],
+            "top_weak": profile["top_weak"],
+            "suggestions": profile["suggestions"],
+            "basis": "sample",
+        }
+    )
+    return metrics
 
 
 def workbench(db: Session, user: User) -> dict:
@@ -184,7 +226,10 @@ def workbench(db: Session, user: User) -> dict:
     else:
         lowest = min(classes, key=lambda item: item["completion_rate"])
         if all(not item["has_learning_data"] for item in classes):
-            focus = "班级已建立，学生用邀请码加入并产生学习记录后，这里会显示完成率与薄弱点。"
+            if any(item.get("basis") == "sample" for item in classes):
+                focus = "名册已同步。完成率和弱项目前是样例对照，学生用邀请码加入并产生记录后会换成真实数据。"
+            else:
+                focus = "班级已建立，学生用邀请码加入并产生学习记录后，这里会显示完成率与薄弱点。"
         else:
             focus = f"优先查看「{lowest['name']}」，近 7 天完成率 {round(lowest['completion_rate'] * 100)}%。"
     return {
@@ -216,8 +261,24 @@ def compare_classes(db: Session, user: User, class_ids: List[int]) -> dict:
         "items": rows,
         "lowest": ranked[0],
         "highest": ranked[-1],
-        "note": "对比使用班级内已有的学习记录。样例名册创建的空班级在学生加入前没有完成率和薄弱点。",
+        "summary": _difference(rows),
+        "note": "有学习记录的班级按真实数据对比。标为样例对照的数字只用于看差异，学生加入后会被替换。",
     }
+
+
+def _difference(items: List[dict]) -> str:
+    ordered = sorted(items, key=lambda item: item["completion_rate"], reverse=True)
+    top, low = ordered[0], ordered[-1]
+    if top["class_id"] == low["class_id"] or top["completion_rate"] == low["completion_rate"]:
+        return "这几个班级目前的完成率相同，可以再看弱项是否一致。"
+    sample = any(item.get("basis") == "sample" for item in items)
+    tail = "其中样例对照会在学生加入并产生记录后改为真实数据。" if sample else ""
+    return (
+        f"「{top['name']}」完成率 {round(top['completion_rate'] * 100)}%，"
+        f"平均掌握 {round((top.get('avg_mastery') or 0) * 100)}%，弱项是{top['top_weak'] or '暂无'}；"
+        f"「{low['name']}」完成率 {round(low['completion_rate'] * 100)}%，"
+        f"弱项是{low['top_weak'] or '暂无'}。{tail}"
+    )
 
 
 def sync_roster(db: Session, user: User) -> dict:

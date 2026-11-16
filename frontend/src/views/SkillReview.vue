@@ -113,9 +113,10 @@ async function share(item) {
   }
 }
 
-function statusLabel(status) {
-  if (status === 'approved') return '已通过'
-  if (status === 'rejected') return '未通过'
+function statusLabel(item) {
+  if (item.status === 'rejected') return '已退回'
+  if (item.status === 'approved' && item.shared) return '已分享，学生可导入'
+  if (item.status === 'approved') return '已通过，尚未分享'
   return '待审核'
 }
 
@@ -161,7 +162,7 @@ onMounted(load)
         <div v-for="item in items" :key="item.slug" class="card">
           <div class="row-between">
             <strong>{{ item.name }}</strong>
-            <span class="tag">{{ statusLabel(item.status) }}</span>
+            <span class="tag">{{ statusLabel(item) }}</span>
           </div>
           <p class="small muted">{{ item.subject }} · {{ item.point_count }} 个知识点 · {{ item.author_name || '教师' }}</p>
           <p v-if="item.review_note" class="small">审核说明：{{ item.review_note }}</p>

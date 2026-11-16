@@ -23,9 +23,6 @@ struct SettingsPage {
     await this.client.load();
     this.apiBase = this.client.base;
     this.nickname = await readString(context, 'nickname', '');
-    if (this.client.token.length === 0) {
-      router.replaceUrl({ url: 'pages/LoginPage' });
-    }
   }
 
   async save(): Promise<void> {

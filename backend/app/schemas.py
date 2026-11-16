@@ -396,7 +396,34 @@ class DashboardOut(BaseModel):
     rhythm: Optional[RhythmOut] = None
     auto_adjust: Optional[AutoAdjustOut] = None
     daily_review: Optional[DailyReviewOut] = None
+    loop_steps: List["LoopStepOut"] = []
+    week_activity: List["WeekMarkOut"] = []
+    next_step: str = ""
+    assignments: List["AssignmentBrief"] = []
     server_date: date
+
+
+class LoopStepOut(BaseModel):
+    key: str
+    label: str
+    done: bool = False
+    hint: str = ""
+
+
+class WeekMarkOut(BaseModel):
+    day: date
+    done: int = 0
+
+
+class AssignmentBrief(BaseModel):
+    id: int
+    title: str
+    package_name: str
+    hint: str = ""
+
+
+DashboardOut.model_rebuild()
+
 
 class ClassCreate(BaseModel):
     name: str = Field(min_length=1, max_length=60)
@@ -739,6 +766,7 @@ class QuizWrongOut(BaseModel):
     chosen: str
     correct: str
     explanation: str
+    kp_id: Optional[int] = None
     kp_name: Optional[str] = None
     category: str = "concept"
     category_label: str = "概念不清"

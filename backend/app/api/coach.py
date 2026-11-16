@@ -18,6 +18,7 @@ from ..services.coach_memory import (
     messages_of,
     open_session,
 )
+from ..services.practice_loop import close_coaching
 from ..services.qa import answer_question
 
 router = APIRouter(prefix="/coach", tags=["语音问答"])
@@ -105,6 +106,20 @@ async def session_message(
         return await append_turn(db, user, row, goal, payload.text, source="text")
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
+
+
+@router.post("/sessions/{session_id}/close")
+def close_session(
+    session_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> dict:
+    try:
+        row = get_session(db, user, session_id)
+        return close_coaching(db, user, row)
+    except ValueError as exc:
+        status = 404 if "会话" in str(exc) else 400
+        raise HTTPException(status_code=status, detail=str(exc))
 
 
 @router.post("/sessions/{session_id}/voice")

@@ -11,9 +11,51 @@ const classOptions = computed(() => classes.value.map((item) => ({ value: item.i
 const data = ref(null)
 const running = ref(false)
 const error = ref('')
+const packages = ref([])
+const packageSlug = ref('')
+const assignments = ref([])
+const assigning = ref(false)
 
 const currentClass = computed(() => classes.value.find((item) => item.id === Number(classId.value)) || null)
 const tiers = computed(() => data.value?.tiers || { high: 0, mid: 0, low: 0 })
+
+async function loadPackages() {
+  try {
+    packages.value = await api.skillPackages(0)
+  } catch (e) {
+    packages.value = []
+  }
+}
+
+async function loadAssignments() {
+  if (!classId.value) {
+    assignments.value = []
+    return
+  }
+  try {
+    const data = await api.classAssignments(Number(classId.value))
+    assignments.value = data.items || []
+  } catch (e) {
+    assignments.value = []
+  }
+}
+
+async function assignCurrent() {
+  if (!classId.value || !packageSlug.value) {
+    notify('请选择班级和学科包', true)
+    return
+  }
+  assigning.value = true
+  try {
+    const created = await api.assignPackage(Number(classId.value), packageSlug.value)
+    notify(`已布置「${created.title}」。目前 ${created.started}/${created.member_count} 名学生已导入。`)
+    await loadAssignments()
+  } catch (e) {
+    notify(e.message, true)
+  } finally {
+    assigning.value = false
+  }
+}
 
 async function loadClasses() {
   loading.value = true
@@ -37,6 +79,7 @@ async function loadDashboard() {
   data.value = null
   try {
     data.value = await api.teacherDashboard(Number(classId.value))
+    await loadAssignments()
   } catch (e) {
     error.value = e.message
   } finally {
@@ -44,7 +87,10 @@ async function loadDashboard() {
   }
 }
 
-onMounted(loadClasses)
+onMounted(() => {
+  loadClasses()
+  loadPackages()
+})
 </script>
 
 <template>
@@ -93,6 +139,28 @@ onMounted(loadClasses)
         还没有班级。请到 <router-link class="link-btn" to="/class">班级看板</router-link> 创建或加入班级。
       </div>
       <div v-else-if="error" class="empty" style="margin-top: 10px">{{ error }}</div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">从学科包布置练习</div>
+      <p class="card-sub">布置后学生会在今日看到提醒。完成度按已经导入该包知识点的人数计算。</p>
+      <div class="row" style="gap: 8px; margin-top: 12px; flex-wrap: wrap">
+        <AppSelect
+          v-model="packageSlug"
+          :options="packages.map((item) => ({ value: item.slug, label: item.name }))"
+          placeholder="选择学科包"
+          style="width: 220px"
+        />
+        <button class="btn" :disabled="assigning || !classId" @click="assignCurrent">
+          {{ assigning ? '布置中...' : '布置给当前班级' }}
+        </button>
+      </div>
+      <div v-if="assignments.length" class="stack" style="margin-top: 12px">
+        <div v-for="item in assignments" :key="item.id" class="kv">
+          <span>{{ item.title }}</span>
+          <strong>{{ item.started }}/{{ item.member_count }} 已导入 · 弱项见下方对比</strong>
+        </div>
+      </div>
     </div>
 
     <div v-if="data" class="stack">

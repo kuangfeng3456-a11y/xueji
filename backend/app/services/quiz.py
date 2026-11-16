@@ -1141,6 +1141,7 @@ def grade_quiz(
                 "explanation": question.get("explanation", ""),
                 "solution_steps": question.get("solution_steps") or [],
                 "difficulty": question.get("difficulty"),
+                "kp_id": point.id if point else question.get("kp_id"),
                 "kp_name": question.get("kp_name"),
                 "category": category,
                 "category_label": label,

@@ -87,7 +87,8 @@ def test_followup_reuses_previous_question(db, db_user_goal):
     result = rule_answer_with_history(db, user, goal, "为什么", history)
     assert result["followup"] is True
     assert "今天学什么" in result["answer"]
-    assert "今天" in result["answer"]
+    assert "上一轮" in result["answer"]
+    assert "还没完成" in result["answer"]
 
 
 def test_coach_session_keeps_multiple_turns(api, auth, goal):
@@ -119,6 +120,7 @@ def test_coach_session_keeps_multiple_turns(api, auth, goal):
     body = second.json()
     assert body["followup"] is True
     assert "今天学什么" in body["answer"]
+    assert "上一轮" in body["answer"]
     assert len(body["messages"]) == 4
     assert [item["role"] for item in body["messages"]] == ["user", "coach", "user", "coach"]
 
@@ -283,7 +285,11 @@ def test_workbench_compare_and_mock_bridge(api, monkeypatch):
     report = compared.json()
     assert len(report["items"]) == 2
     assert report["items"][0]["member_count"] == 0
-    assert "邀请码" in report["note"] or "学习记录" in report["note"]
+    assert report["items"][0]["basis"] == "sample"
+    assert report["items"][0]["top_weak"] != report["items"][1]["top_weak"]
+    assert report["items"][0]["completion_rate"] != report["items"][1]["completion_rate"]
+    assert "样例对照" in report["summary"]
+    assert "secret" not in compared.text
 
     pushed = api(
         "POST",
@@ -318,6 +324,93 @@ def test_http_bridge_hides_endpoint_and_token(api, monkeypatch):
     assert "secret.example" not in text
     assert "super-secret-token" not in text
     assert "abc" not in text
+
+
+def test_enqueue_keeps_review_stage_and_makes_card_due(api, auth, goal, db):
+    from app.models import KnowledgePoint, Mastery
+
+    point = KnowledgePoint(goal_id=goal["id"], name="短对话", weight=1.2)
+    db.add(point)
+    db.commit()
+    db.add(Mastery(user_id=auth["user"]["id"], kp_id=point.id, value=0.4, review_stage=2))
+    db.commit()
+
+    response = api(
+        "POST",
+        f"/api/goals/{goal['id']}/flashcards/enqueue",
+        token=auth["token"],
+        json={"kp_id": point.id},
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["review_stage"] == 2
+    assert body["next_review_at"]
+    assert "间隔没有被改写" in body["detail"]
+
+
+def test_close_session_returns_at_most_three_points(api, auth, goal):
+    created = api(
+        "POST",
+        "/api/coach/sessions",
+        token=auth["token"],
+        json={"goal_id": goal["id"]},
+    )
+    session_id = created.json()["id"]
+    api(
+        "POST",
+        f"/api/coach/sessions/{session_id}/messages",
+        token=auth["token"],
+        json={"text": "今天学什么", "goal_id": goal["id"]},
+    )
+    api(
+        "POST",
+        f"/api/coach/sessions/{session_id}/messages",
+        token=auth["token"],
+        json={"text": "为什么", "goal_id": goal["id"]},
+    )
+    closed = api("POST", f"/api/coach/sessions/{session_id}/close", token=auth["token"])
+    assert closed.status_code == 200, closed.text
+    body = closed.json()
+    assert 1 <= len(body["takeaways"]) <= 3
+    assert body["next_practice"]
+    empty = api("POST", "/api/coach/sessions", token=auth["token"], json={})
+    denied = api("POST", f"/api/coach/sessions/{empty.json()['id']}/close", token=auth["token"])
+    assert denied.status_code == 400
+
+
+def test_dashboard_loop_and_week_activity(api, auth, goal):
+    response = api("GET", "/api/dashboard", token=auth["token"], params={"goal_id": goal["id"]})
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert [step["key"] for step in body["loop_steps"]] == ["lesson", "quiz", "voice", "review"]
+    assert body["loop_steps"][0]["done"] is False
+    assert len(body["week_activity"]) == 7
+    assert body["next_step"]
+
+
+def test_teacher_can_assign_package_and_see_completion(api):
+    teacher = _staff(api, "teacher6", "teacher")
+    created = api(
+        "POST",
+        "/api/classes",
+        token=teacher,
+        json={"name": "英语提高班", "description": "课堂练习"},
+    )
+    assert created.status_code == 201, created.text
+    class_id = created.json()["id"]
+    assigned = api(
+        "POST",
+        f"/api/campus/classes/{class_id}/assignments",
+        token=teacher,
+        json={"slug": "cet4"},
+    )
+    assert assigned.status_code == 201, assigned.text
+    body = assigned.json()
+    assert body["title"] == "大学英语四级包"
+    assert body["completion_rate"] == 0.0
+    listed = api("GET", f"/api/campus/classes/{class_id}/assignments", token=teacher)
+    assert listed.status_code == 200
+    assert listed.json()["items"][0]["slug"] == "cet4"
 
 
 def test_http_bridge_imports_remote_roster(api, monkeypatch):
