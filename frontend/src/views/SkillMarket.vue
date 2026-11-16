@@ -390,7 +390,9 @@ function go(path) {
 
 onMounted(async () => {
   await load()
-  if (route.query.create === '1') openCreate()
+  if (route.query.create === '1' && store.user?.campus_access) {
+    router.replace({ path: '/collab', query: { tab: 'packages' } })
+  }
 })
 
 const marketStats = computed(() => ({
@@ -547,32 +549,22 @@ const marketStats = computed(() => ({
       <div class="card">
         <div class="card-head">
           <div>
-            <div class="card-title">新增一个学科 Skill 包</div>
-            <div class="card-sub">四步走完：填信息、定义知识点树、预览、注册并应用</div>
+            <div class="card-title">学科包从哪里来</div>
+            <div class="card-sub">这里只展示已通过审核、可以导入的学科包</div>
           </div>
-          <button class="btn btn-sm" @click="openCreate">开始创建</button>
-        </div>
-        <div class="stack" style="margin-top: 12px">
-          <button class="kv create-step" @click="openCreate">
-            <span>第一步</span><strong>填名称、学科与标签</strong>
-          </button>
-          <button class="kv create-step" @click="openCreate">
-            <span>第二步</span><strong>定义知识点树与权重</strong>
-          </button>
-          <button class="kv create-step" @click="openCreate">
-            <span>第三步</span><strong>预览模块与知识点数量</strong>
-          </button>
-          <button class="kv create-step" @click="openCreate">
-            <span>第四步</span><strong>一键应用到任意考试目标</strong>
+          <button v-if="store.user?.campus_access" class="btn btn-sm" @click="router.push({ path: '/collab', query: { tab: 'packages' } })">
+            去审核与上传
           </button>
         </div>
+        <p class="small muted" style="margin-top: 12px; line-height: 1.8">
+          常见课程已经整理好，可以直接应用到当前目标。教师提交的自定义包，需要审核通过并分享后才会出现在这里。
+        </p>
       </div>
 
       <div class="card">
-        <div class="card-title">与四个智能体的关系</div>
+        <div class="card-title">导入之后会怎样</div>
         <div class="small muted" style="margin-top: 10px; line-height: 1.9">
-          学科包只提供「学科知识结构」，Planner、Diagnoser、Coach、Reporter 四个智能体保持不变。
-          这正是 Skills 化的价值：能力可复用，内容可替换。
+          学科包提供知识结构。导入后，今日任务、随堂测和错题复盘都会按这些知识点安排。
         </div>
       </div>
     </div>

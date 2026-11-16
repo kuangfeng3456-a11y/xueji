@@ -26,6 +26,8 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     nickname: Mapped[str] = mapped_column(String(64), default="同学")
     school: Mapped[Optional[str]] = mapped_column(String(128), nullable=True)
+    # student 学生 / teacher 教师 / academic 教务。自助注册可选，默认学生。
+    role: Mapped[str] = mapped_column(String(16), default="student")
     # 平台超级管理员：可访问 /api/admin 管理端点与研发内部工具。
     # 只由命令行脚本或现有超管授予，任何自助注册路径都不会写入该字段。
     is_superadmin: Mapped[bool] = mapped_column(Boolean, default=False, index=True)
@@ -177,6 +179,8 @@ class SchoolClass(Base):
     description: Mapped[str] = mapped_column(String(255), default="")
     owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
     invite_code: Mapped[str] = mapped_column(String(16), unique=True, index=True)
+    # 教务对接写入的外部班级编号；为空表示在学迹内手工创建。
+    external_ref: Mapped[Optional[str]] = mapped_column(String(64), nullable=True, index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 
@@ -212,6 +216,13 @@ class SkillPackage(Base):
     tags: Mapped[str] = mapped_column(String(255), default="")
     config: Mapped[str] = mapped_column(Text, default="{}")
     official: Mapped[bool] = mapped_column(default=True)
+    # approved 可使用 / pending 待审核 / rejected 未通过
+    status: Mapped[str] = mapped_column(String(16), default="approved", index=True)
+    author_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True, index=True)
+    reviewer_id: Mapped[Optional[int]] = mapped_column(ForeignKey("users.id"), nullable=True)
+    review_note: Mapped[str] = mapped_column(String(255), default="")
+    shared: Mapped[bool] = mapped_column(default=True)
+    share_code: Mapped[Optional[str]] = mapped_column(String(16), nullable=True, unique=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
 
 class FocusSession(Base):
@@ -974,3 +985,57 @@ class DailyReview(Base):
     next_pace: Mapped[str] = mapped_column(String(16), default="same")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class CoachSession(Base):
+    """语音教练多轮会话。同一会话内的追问可以引用此前问答。"""
+
+    __tablename__ = "coach_sessions"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    goal_id: Mapped[Optional[int]] = mapped_column(ForeignKey("goals.id"), nullable=True, index=True)
+    title: Mapped[str] = mapped_column(String(128), default="语音教练")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class CoachMessage(Base):
+    """会话中的一轮发言。role 为 user 或 coach。"""
+
+    __tablename__ = "coach_messages"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    session_id: Mapped[int] = mapped_column(ForeignKey("coach_sessions.id"), index=True)
+    role: Mapped[str] = mapped_column(String(16))
+    text: Mapped[str] = mapped_column(Text, default="")
+    source: Mapped[str] = mapped_column(String(16), default="text")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class AcademicLink(Base):
+    """教务对接记录。未配置校级地址时 provider 为 mock，不保存任何学校凭证。"""
+
+    __tablename__ = "academic_links"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    owner_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    school_name: Mapped[str] = mapped_column(String(128), default="")
+    provider: Mapped[str] = mapped_column(String(16), default="mock")
+    status: Mapped[str] = mapped_column(String(16), default="idle")
+    last_message: Mapped[str] = mapped_column(String(255), default="")
+    last_sync_at: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+
+
+class AcademicSyncLog(Base):
+    """一次名册同步或班级摘要回传。摘要只保留统计，不写学生密码或证件号。"""
+
+    __tablename__ = "academic_sync_logs"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    link_id: Mapped[int] = mapped_column(ForeignKey("academic_links.id"), index=True)
+    direction: Mapped[str] = mapped_column(String(16))
+    status: Mapped[str] = mapped_column(String(16), default="ok")
+    summary: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)

@@ -150,7 +150,12 @@ onMounted(loadClasses)
       <div class="stack" style="margin-top: 10px">
         <div class="kv"><span>聚合优先</span><strong>默认展示班级聚合，个体名单仅班级创建者可见</strong></div>
         <div class="kv"><span>不贴标签</span><strong>风险与分层仅用于教学干预参考，不作为惩罚依据</strong></div>
-        <div class="kv"><span>权限</span><strong>非班级创建者访问会收到 403 提示</strong></div>
+        <div class="kv"><span>权限</span><strong>非班级创建者访问会收到权限提示</strong></div>
+        <div class="row" style="gap: 8px">
+          <router-link class="btn btn-ghost btn-sm" to="/collab?tab=compare">班级报表</router-link>
+          <router-link class="btn btn-ghost btn-sm" to="/collab?tab=academic">教务对接</router-link>
+          <router-link class="btn btn-ghost btn-sm" to="/collab?tab=packages">学科包审核</router-link>
+        </div>
       </div>
     </div>
 

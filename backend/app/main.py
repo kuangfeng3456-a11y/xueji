@@ -60,6 +60,7 @@ from .api import (
     study_tools,
     tutor,
     teacher,
+    campus,
 )
 from .cache import cache
 from .config import settings
@@ -135,6 +136,22 @@ def ensure_schema() -> None:
         {
             # 平台超级管理员（开发者账号）：老库补列，默认 False
             "is_superadmin": "BOOLEAN DEFAULT 0",
+            "role": "VARCHAR(16) DEFAULT 'student'",
+        },
+    )
+    add_columns(
+        "classes",
+        {"external_ref": "VARCHAR(64)"},
+    )
+    add_columns(
+        "skill_packages",
+        {
+            "status": "VARCHAR(16) DEFAULT 'approved'",
+            "author_id": "INTEGER",
+            "reviewer_id": "INTEGER",
+            "review_note": "VARCHAR(255) DEFAULT ''",
+            "shared": "BOOLEAN DEFAULT 1",
+            "share_code": "VARCHAR(16)",
         },
     )
     add_columns(
@@ -291,6 +308,7 @@ for module in (
     teaching,
     exam_prep,
     media_proxy,
+    campus,
 ):
     app.include_router(module.router, prefix=settings.API_PREFIX)
 

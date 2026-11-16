@@ -1,0 +1,15 @@
+oh_modules/
+local.properties
+.hvigor/
+.idea/
+build/
+.preview/
+**/build/
+**/.cxx/
+*.hap
+*.app
+signing/
+*.p12
+*.p7b
+*.cer
+*.pem

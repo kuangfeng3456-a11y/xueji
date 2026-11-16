@@ -33,7 +33,8 @@ def test_ensure_packages_creates_all_builtin_packages(db):
     db.commit()
 
     rows = db.scalars(select(SkillPackage)).all()
-    assert len(rows) == len(PACKAGES) == 4
+    assert len(rows) == len(PACKAGES)
+    assert len(PACKAGES) >= 10
     assert {row.slug for row in rows} == {item["slug"] for item in PACKAGES}
 
     cet4 = _row(db, "cet4")
@@ -70,7 +71,7 @@ def test_ensure_packages_is_idempotent_and_refreshes_fields(db):
 def test_package_views_without_goal_reports_zero_applied(db):
     views = package_views(db, None)
 
-    assert len(views) == 4
+    assert len(views) == len(PACKAGES)
     cet4 = next(item for item in views if item["slug"] == "cet4")
     expected = _package("cet4")
     assert cet4["name"] == expected["name"]
@@ -222,7 +223,7 @@ def test_list_packages_api(api, auth):
 
     assert response.status_code == 200, response.text
     body = response.json()
-    assert len(body) == 4
+    assert len(body) == len(PACKAGES)
     cet4 = body[0]
     assert cet4["slug"] == "cet4"
     assert cet4["official"] is True

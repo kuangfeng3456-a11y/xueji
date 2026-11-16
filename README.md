@@ -58,7 +58,7 @@
 | 反脆弱挑战模式 | 用陌生条件训练应对能力，答错不扣掌握度，记录韧性值 |
 | 学习证据链 | 每个 AI 判断记录输入、规则、输出与模型来源，可逐条展开追溯 |
 
-尚未实现：鸿蒙原生客户端（ArkTS）。
+鸿蒙原生客户端位于 `clients/harmonyos/`，用 ArkTS 复用现有接口，可在 DevEco Studio 中打开。本仓库的云端环境不编译该工程，打开与构建步骤见该目录下的说明。
 
 ## 竞品能力对齐与差异化创新
 
@@ -154,6 +154,7 @@
 │   │   ├── api.js · store.js · router.js · App.vue · style.css
 │   ├── build.mjs            # Rollup + Vue SFC 编译（不依赖 esbuild）
 │   └── package.json
+├── clients/harmonyos/       # 鸿蒙 ArkTS 客户端（DevEco Studio 打开）
 ├── skills/                  # 四个可复用学习类 Skills（独立学科包）
 ├── Dockerfile               # 多阶段：构建前端 + 运行后端
 ├── docker-compose.yml       # MySQL + Redis + 应用

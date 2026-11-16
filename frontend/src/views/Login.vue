@@ -10,7 +10,7 @@ const loading = ref(false)
 const showPassword = ref(false)
 const remember = ref(true)
 const errors = reactive({ username: '', password: '' })
-const form = reactive({ username: '', password: '', nickname: '', school: '' })
+const form = reactive({ username: '', password: '', nickname: '', school: '', role: 'student' })
 const isRegister = computed(() => mode.value === 'register')
 const degraded = computed(
   () =>
@@ -48,7 +48,8 @@ async function submit() {
             username: form.username.trim(),
             password: form.password,
             nickname: form.nickname.trim() || form.username.trim(),
-            school: form.school.trim() || null
+            school: form.school.trim() || null,
+            role: form.role || 'student'
           }
     const data = mode.value === 'login' ? await api.login(payload) : await api.register(payload)
     setSession(data.access_token, data.user, remember.value)
@@ -58,7 +59,14 @@ async function submit() {
         ? '注册成功。先设定一个考试目标，几分钟后就能看到今天该学什么。'
         : `欢迎回来，${data.user.nickname || data.user.username}`
     )
-    router.push(isNew ? { path: '/plan', query: { tab: 'goal' } } : '/')
+    const campus = data.user?.campus_access
+    router.push(
+      isNew
+        ? campus
+          ? { path: '/collab', query: { tab: 'teacher' } }
+          : { path: '/plan', query: { tab: 'goal' } }
+        : '/'
+    )
   } catch (e) {
     notify(e.message, true)
   } finally {
@@ -158,6 +166,15 @@ onMounted(async () => {
           <label class="login-field">
             <span>学校（可选）</span>
             <input v-model="form.school" class="input" placeholder="用于班级与家长报告" />
+          </label>
+          <label class="login-field">
+            <span>身份</span>
+            <select v-model="form.role" class="input">
+              <option value="student">学生</option>
+              <option value="teacher">教师</option>
+              <option value="academic">教务</option>
+            </select>
+            <small class="muted">教师和教务登录后可以进入教师工作台、班级报表和教务对接。</small>
           </label>
         </template>
 

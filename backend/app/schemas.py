@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Any, Dict, List, Optional
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class UserCreate(BaseModel):
@@ -9,6 +9,7 @@ class UserCreate(BaseModel):
     password: str = Field(min_length=6, max_length=64)
     nickname: Optional[str] = Field(default=None, max_length=32)
     school: Optional[str] = Field(default=None, max_length=64)
+    role: str = Field(default="student", pattern="^(student|teacher|academic)$")
 
     @field_validator("username")
     @classmethod
@@ -30,8 +31,16 @@ class UserOut(BaseModel):
     username: str
     nickname: str
     school: Optional[str] = None
+    role: str = "student"
     is_superadmin: bool = False
+    campus_access: bool = False
     created_at: datetime
+
+    @model_validator(mode="after")
+    def fill_campus_access(self):
+        if self.is_superadmin or self.role in ("teacher", "academic"):
+            self.campus_access = True
+        return self
 
 
 class Token(BaseModel):
@@ -484,6 +493,8 @@ class SkillPackageOut(BaseModel):
     description: str
     tags: List[str] = []
     official: bool = True
+    status: str = "approved"
+    shared: bool = True
     point_count: int = 0
     applied_count: int = 0
     applied: bool = False

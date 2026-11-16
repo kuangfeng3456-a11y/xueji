@@ -1,9 +1,9 @@
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { cloudSpeechReady, startRecorder } from '../voiceInput'
 import { useRoute, useRouter } from 'vue-router'
 import { api } from '../api'
 import { store, notify } from '../store'
-import { streamSse } from '../sse'
 
 function nowTime() {
   const d = new Date()
@@ -41,6 +41,10 @@ const synthesisSupported =
 const route = useRoute()
 const router = useRouter()
 const mode = ref(route.query.mode === 'shadow' ? 'shadow' : 'chat')
+const sessionId = ref(0)
+const inputChannel = ref('语音输入可用文字代替')
+const outputChannel = ref('朗读会优先尝试云端语音，未开通时改用本机')
+let capture = null
 
 const SHADOW_BANK = [
   { id: 'p1', topic: '发音', text: 'The features of English pronunciation take practice every day.', tip: '注意 features 和 pronunciation 的重音落在第二音节。' },
@@ -265,17 +269,45 @@ function showTime(index) {
   return ch * 60 + cm - (ph * 60 + pm) >= 3
 }
 
-function startListening() {
+function clockFrom(value) {
+  if (!value) return nowTime()
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return nowTime()
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+}
+
+async function ensureSession() {
+  if (sessionId.value) return sessionId.value
+  const created = await api.createCoachSession({ goal_id: store.currentGoalId || null, title: '语音教练' })
+  sessionId.value = created.id
+  return created.id
+}
+
+async function loadHistory() {
+  try {
+    const listed = await api.coachSessions()
+    const latest = (listed.items || [])[0]
+    if (!latest) return
+    sessionId.value = latest.id
+    const detail = await api.coachSession(latest.id)
+    if (!detail.messages?.length) return
+    messages.value = detail.messages.map((item) => ({
+      role: item.role === 'user' ? 'user' : 'coach',
+      text: item.text,
+      source: item.source || 'rule',
+      suggestions: [],
+      time: clockFrom(item.created_at)
+    }))
+    await scrollToBottom()
+  } catch (e) {
+    /* 没有历史时保留开场白 */
+  }
+}
+
+function useWebSpeech(onText) {
   if (!speechSupported) {
-    notify('当前浏览器不支持语音识别，请直接输入文字', true)
-    return
-  }
-  if (mode.value === 'shadow') {
-    startShadowListening()
-    return
-  }
-  if (listening.value) {
-    recognition?.stop()
+    notify('当前环境不能识别语音，请直接输入文字', true)
+    inputChannel.value = '请改用文字输入'
     return
   }
   recognition = new SpeechRecognition()
@@ -285,19 +317,87 @@ function startListening() {
   recognition.onresult = (event) => {
     const said = event.results?.[0]?.[0]?.transcript || ''
     listening.value = false
-    if (!said) return
-    question.value = said
-    ask()
+    if (said) onText(said)
   }
   recognition.onerror = () => {
     listening.value = false
-    notify('语音识别失败，可改用键盘输入', true)
+    notify('本机语音识别失败，请改用文字', true)
   }
   recognition.onend = () => {
     listening.value = false
   }
   listening.value = true
+  inputChannel.value = '本机语音识别'
   recognition.start()
+}
+
+async function startListening() {
+  if (mode.value === 'shadow') {
+    if (!speechSupported) {
+      notify('当前浏览器不支持跟读识别，请先听标准音', true)
+      return
+    }
+    startShadowListening()
+    return
+  }
+  if (listening.value) {
+    if (capture) {
+      const pending = capture
+      capture = null
+      listening.value = false
+      const blob = await pending.stop()
+      await sendCloudAudio(blob)
+    } else {
+      recognition?.stop()
+    }
+    return
+  }
+  const cloudReady = await cloudSpeechReady(api)
+  if (cloudReady) {
+    try {
+      capture = await startRecorder()
+      capture.start()
+      listening.value = true
+      inputChannel.value = '云端语音识别'
+      return
+    } catch (e) {
+      capture = null
+      inputChannel.value = '本机语音识别'
+    }
+  } else {
+    inputChannel.value = '本机语音识别（云端未开通）'
+  }
+  useWebSpeech((said) => {
+    question.value = said
+    ask()
+  })
+}
+
+async function sendCloudAudio(blob) {
+  if (!blob || !blob.size) {
+    notify('没有录到声音，请再试一次', true)
+    return
+  }
+  busy.value = true
+  try {
+    const id = await ensureSession()
+    const form = new FormData()
+    form.append('file', blob, 'speech.webm')
+    form.append('audio_format', (blob.type || '').includes('wav') ? 'wav' : 'webm')
+    if (store.currentGoalId) form.append('goal_id', String(store.currentGoalId))
+    const data = await api.coachVoice(id, form)
+    if (data.status === 'ok' && data.transcript) {
+      inputChannel.value = '云端语音识别'
+      applySessionReply(data.transcript, data)
+      return
+    }
+    inputChannel.value = data.fallback_label || '请改用文字输入'
+    notify(data.fallback_label || '云端语音识别不可用，请改用文字', true)
+  } catch (e) {
+    notify(e.message || '语音发送失败，请改用文字', true)
+  } finally {
+    busy.value = false
+  }
 }
 
 function startShadowListening() {
@@ -348,41 +448,29 @@ async function playShadow() {
   await speak(currentShadow.value.text, 'en-US')
 }
 
+function applySessionReply(transcript, data) {
+  addMessage('user', transcript, 'user')
+  question.value = ''
+  showQuick.value = false
+  showEmoji.value = false
+  addMessage('coach', data.answer, data.source || 'rule', data.suggestions || [])
+  speak(data.answer)
+}
+
 async function ask(text) {
   const content = (text ?? question.value).trim()
   if (!content || busy.value) return
-  addMessage('user', content, 'user')
   question.value = ''
   showQuick.value = false
   showEmoji.value = false
   busy.value = true
   await scrollToBottom()
   try {
-    // 文档 7.1：语音教练优先走 SSE（P15），失败再退回一次性接口
-    let spoken = ''
-    let source = 'llm'
-    try {
-      await streamSse('/api/voice/ask/stream', { question: content }, {
-        onResult: (data) => {
-          spoken = data.data?.spoken_reply || data.data?.reply || ''
-          source = 'llm'
-        },
-        onFallback: (data) => {
-          spoken = data.text || ''
-          source = 'rule'
-        }
-      })
-    } catch (streamError) {
-      const result = await api.askCoach({ question: content, goal_id: store.currentGoalId })
-      spoken = result.answer
-      source = result.source
-      addMessage('coach', spoken, source, result.suggestions || [])
-      speak(spoken)
-      return
-    }
-    if (!spoken) spoken = '我没听清，可以再说一次吗？'
-    addMessage('coach', spoken, source, [])
-    speak(spoken)
+    const id = await ensureSession()
+    const saved = await api.coachMessage(id, { text: content, goal_id: store.currentGoalId || null })
+    addMessage('user', content, 'user')
+    addMessage('coach', saved.answer, saved.source || 'rule', saved.suggestions || [])
+    speak(saved.answer)
   } catch (e) {
     addMessage('coach', `抱歉，暂时没能回答：${e.message}`, 'error', ['今天学什么', '我的薄弱点'])
   } finally {
@@ -400,6 +488,7 @@ async function speak(text, lang = 'zh-CN') {
     form.append('text', String(text).slice(0, 500))
     const data = await api.sisSynthesize(form)
     if (data && data.status === 'ok' && data.audio_b64) {
+      outputChannel.value = '云端语音合成'
       if (cloudAudio) {
         cloudAudio.pause()
         cloudAudio = null
@@ -417,10 +506,10 @@ async function speak(text, lang = 'zh-CN') {
       return
     }
     if (data && data.status && data.status !== 'ok') {
-      notify('标准音暂时改用本机朗读')
+      outputChannel.value = data.fallback_label || '本机朗读'
     }
   } catch (e) {
-    /* 走浏览器兜底 */
+    outputChannel.value = '本机朗读'
   }
   browserSpeak(text, lang)
 }
@@ -469,8 +558,17 @@ function closePanels() {
   showEmoji.value = false
 }
 
+onMounted(() => {
+  loadHistory()
+  cloudSpeechReady(api).then((ready) => {
+    inputChannel.value = ready ? '可使用云端语音识别' : '云端语音识别未开通，将使用本机或文字'
+    outputChannel.value = ready ? '朗读优先使用云端语音' : '云端语音合成未开通，将使用本机朗读'
+  })
+})
+
 onBeforeUnmount(() => {
   if (recognition) recognition.stop()
+  if (capture) capture.stop().catch(() => {})
   if (synthesisSupported) window.speechSynthesis.cancel()
 })
 </script>
@@ -484,7 +582,7 @@ onBeforeUnmount(() => {
           <div class="wx-header-name">学迹教练</div>
           <div class="wx-header-status">
             <span class="wx-online-dot"></span>
-            {{ mode === 'shadow' ? '跟读评测 · ' + goalName : (busy ? '正在思考...' : '在线 · ' + goalName) }}
+            {{ mode === 'shadow' ? '跟读评测 · ' + goalName : (busy ? '正在思考...' : '连续对话 · ' + goalName) }}
           </div>
         </div>
       </div>
@@ -494,6 +592,7 @@ onBeforeUnmount(() => {
       </div>
       <button v-if="speaking" class="wx-header-btn" @click="stopSpeaking">停止朗读</button>
     </div>
+    <p v-if="mode === 'chat'" class="wx-note">会记住这次对话里的追问。{{ inputChannel }}。{{ outputChannel }}。</p>
 
     <div v-if="mode === 'shadow'" class="shadow-lab">
       <p class="shadow-lead">先听标准音，再开口跟读。句子优先取自今天的课程和错题。</p>
@@ -531,7 +630,7 @@ onBeforeUnmount(() => {
             <div class="wx-bubble">{{ message.text }}</div>
             <div v-if="message.role === 'coach'" class="wx-msg-meta">
               <span v-if="message.source === 'llm'" class="wx-tag wx-tag-llm">AI</span>
-              <span v-else-if="message.source === 'rule'" class="wx-tag wx-tag-rule">规则</span>
+              <span v-else-if="message.source === 'rule'" class="wx-tag wx-tag-rule">学习记录</span>
               <button v-if="synthesisSupported" class="wx-read-btn" @click="speak(message.text)">朗读</button>
             </div>
             <div v-if="message.suggestions?.length" class="wx-suggestions">

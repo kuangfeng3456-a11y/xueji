@@ -4,6 +4,7 @@ import { api } from '../api'
 import { store, notify } from '../store'
 import { confirmAction } from '../confirm'
 import AppSelect from '../components/AppSelect.vue'
+import { cloudSpeechReady, startRecorder } from '../voiceInput'
 
 const points = ref([])
 const mistakes = ref([])
@@ -15,6 +16,9 @@ const filter = ref('')
 const result = ref(null)
 const imageUrl = ref('')
 const uploading = ref(false)
+const dictating = ref(false)
+const dictateNote = ref('可拍照、从相册选择，或用语音说出题干。文字识别或云端语音未开通时，请手动核对。')
+let dictateCapture = null
 const photoInput = ref(null)
 const cameraOpen = ref(false)
 const cameraBusy = ref(false)
@@ -157,11 +161,13 @@ async function uploadPhoto(event) {
       if (ocr && ocr.status === 'ok' && (ocr.text || '').trim()) {
         form.question = ocr.text.trim().slice(0, 2000)
         notify('已识别题干，请核对后提交')
+      } else if (ocr && (ocr.status === 'not_configured' || ocr.status === 'sdk_missing' || ocr.status === 'not_subscribed')) {
+        notify('文字识别未开通，请手动填写题干')
       } else {
-        notify('未能自动识别，请手动录入题干')
+        notify('这次没有识别出文字，请手动填写题干')
       }
     } catch (e) {
-      notify('自动识别暂不可用，请手动录入题干')
+      notify('文字识别暂不可用，请手动填写题干')
     }
   } catch (e) {
     notify(e.message, true)
@@ -169,6 +175,73 @@ async function uploadPhoto(event) {
     uploading.value = false
     if (photoInput.value) photoInput.value.value = ''
   }
+}
+
+function fillQuestion(text) {
+  const clean = String(text || '').trim()
+  if (!clean) return
+  form.question = clean.slice(0, 2000)
+}
+
+async function dictateQuestion() {
+  if (dictating.value && dictateCapture) {
+    const pending = dictateCapture
+    dictateCapture = null
+    dictating.value = false
+    const blob = await pending.stop()
+    const formData = new FormData()
+    formData.append('file', blob, 'speech.webm')
+    formData.append('audio_format', (blob.type || '').includes('wav') ? 'wav' : 'webm')
+    try {
+      const heard = await api.sisRecognize(formData)
+      if (heard.status === 'ok' && heard.text) {
+        fillQuestion(heard.text)
+        dictateNote.value = '已用云端语音填入题干，请核对。'
+        return
+      }
+      dictateNote.value = heard.fallback_label || '云端语音识别不可用，请手动填写题干'
+      notify(dictateNote.value, true)
+    } catch (e) {
+      notify('语音识别失败，请手动填写题干', true)
+    }
+    return
+  }
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
+  const cloudReady = await cloudSpeechReady(api)
+  if (cloudReady) {
+    try {
+      dictateCapture = await startRecorder()
+      dictateCapture.start()
+      dictating.value = true
+      dictateNote.value = '正在录音，再点一次结束并识别'
+      return
+    } catch (e) {
+      dictateCapture = null
+    }
+  }
+  if (!SpeechRecognition) {
+    dictateNote.value = '当前环境不能语音输入，请手动填写题干'
+    notify(dictateNote.value, true)
+    return
+  }
+  const recognition = new SpeechRecognition()
+  recognition.lang = 'zh-CN'
+  recognition.interimResults = false
+  recognition.onresult = (event) => {
+    fillQuestion(event.results?.[0]?.[0]?.transcript || '')
+    dictateNote.value = cloudReady ? '本机语音已填入题干，请核对' : '云端语音未开通，已改用本机识别，请核对题干'
+    dictating.value = false
+  }
+  recognition.onerror = () => {
+    dictating.value = false
+    dictateNote.value = '语音识别失败，请手动填写题干'
+  }
+  recognition.onend = () => {
+    dictating.value = false
+  }
+  dictating.value = true
+  dictateNote.value = '正在聆听，请说出题干'
+  recognition.start()
 }
 
 async function submit() {
@@ -308,7 +381,10 @@ function closeTrace() {
   trace.value = null
 }
 
-onBeforeUnmount(closeCameraCapture)
+onBeforeUnmount(() => {
+  closeCameraCapture()
+  if (dictateCapture) dictateCapture.stop().catch(() => {})
+})
 const mistakeStats = computed(() => {
   const localCats = { concept: 0, method: 0, careless: 0, time: 0 }
   for (const item of mistakes.value) {
@@ -363,7 +439,13 @@ const mistakeStats = computed(() => {
 
         <div class="field">
           <label>题目</label>
-          <textarea v-model="form.question" class="textarea" placeholder="粘贴题干，例如：What does the woman imply about the meeting?"></textarea>
+          <textarea v-model="form.question" class="textarea" placeholder="粘贴题干，或拍照、语音输入后核对"></textarea>
+          <div class="row" style="margin-top: 8px">
+            <button type="button" class="btn btn-ghost btn-sm" @click="dictateQuestion">
+              {{ dictating ? '结束并识别' : '语音输入题干' }}
+            </button>
+          </div>
+          <div class="small muted" style="margin-top: 4px">{{ dictateNote }}</div>
         </div>
 
         <div class="photo-upload">
@@ -376,11 +458,11 @@ const mistakeStats = computed(() => {
             <label class="photo-pick" style="flex: 1">
               <input ref="photoInput" type="file" accept="image/jpeg,image/png,image/webp" @change="uploadPhoto" />
               <span class="photo-pick-icon">＋</span>
-              <span>{{ uploading ? '上传中...' : '或选择本地图片' }}</span>
+              <span>{{ uploading ? '上传中...' : '从相册选择' }}</span>
             </label>
           </div>
           <div class="small muted" style="margin-top: 4px">
-            图片用于错题复盘；题干仍建议手动填写，文字归因更稳定。
+            拍照或从相册选择后，已开通文字识别时会填入题干；未开通时请手动填写。图片会留在错题记录里。
           </div>
         </div>
 

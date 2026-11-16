@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { SECTIONS, sectionByKey, isTabVisible, visibleTabs } from '../sections'
+import { SECTIONS, sectionByKey, tabAudience, visibleTabs } from '../sections'
 import { store } from '../store'
 
 const route = useRoute()
@@ -9,29 +9,33 @@ const router = useRouter()
 
 const section = computed(() => sectionByKey(route.meta.section) || SECTIONS[0])
 
-/** 超管（开发者账号）额外看到研发内部工具入口。 */
+/** 超管额外看到研发内部工具；教师与教务看到班级和教务入口。 */
 const showInternal = computed(() => Boolean(store.user?.is_superadmin))
+const showCampus = computed(() => Boolean(store.user?.campus_access))
 
-/** 导航里展示的标签：普通用户只看商用可见的模块，超管额外看到内部工具。 */
 const navTabs = computed(() => {
-  const tabs = visibleTabs(section.value, showInternal.value)
-  // 从深链进来且当前模块是内部工具时，把它临时挂到标签栏，
-  // 否则用户会看到「没有任何标签处于选中态」的空白感。
+  const tabs = visibleTabs(section.value, showInternal.value, showCampus.value)
   const current = section.value.tabs.find((item) => item.key === activeKey.value)
-  if (current && !isTabVisible(current, showInternal.value)) return [...tabs, current]
-  return tabs.length ? tabs : section.value.tabs
+  if (current && tabAudience(current) === 'internal' && !tabs.some((item) => item.key === current.key)) {
+    return [...tabs, current]
+  }
+  if (tabs.length) return tabs
+  return section.value.tabs.filter((item) => tabAudience(item) === 'core')
 })
 
 const activeKey = computed(() => {
   const requested = String(route.query.tab || '')
-  // 深链优先：内部工具也允许通过 ?tab= 直接访问。
-  if (requested && section.value.tabs.some((item) => item.key === requested)) return requested
-  return visibleTabs(section.value, showInternal.value)[0]?.key || section.value.tabs[0].key
+  const requestedTab = section.value.tabs.find((item) => item.key === requested)
+  const allowed = visibleTabs(section.value, showInternal.value, showCampus.value)
+  if (requestedTab && (allowed.some((item) => item.key === requested) || tabAudience(requestedTab) === 'internal')) {
+    return requested
+  }
+  return allowed[0]?.key || section.value.tabs.find((item) => tabAudience(item) === 'core')?.key || section.value.tabs[0].key
 })
 
 const activeTab = computed(() => section.value.tabs.find((item) => item.key === activeKey.value))
 
-const isInternalView = computed(() => !isTabVisible(activeTab.value, false))
+const isInternalView = computed(() => tabAudience(activeTab.value) === 'internal')
 
 function select(key) {
   if (key === activeKey.value) return
@@ -57,7 +61,7 @@ function select(key) {
         v-for="item in navTabs"
         :key="item.key"
         class="hub-tab"
-        :class="{ active: item.key === activeKey, 'is-internal': !isTabVisible(item) }"
+        :class="{ active: item.key === activeKey, 'is-internal': tabAudience(item) === 'internal' }"
         role="tab"
         :aria-selected="item.key === activeKey"
         @click="select(item.key)"
