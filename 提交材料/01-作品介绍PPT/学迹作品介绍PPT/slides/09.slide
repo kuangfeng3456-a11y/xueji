@@ -1,0 +1,10 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521', position: 'relative', justifyContent: 'center' }}>
+    <Box style={{ position: 'absolute', right: 60, top: 60, opacity: 0.14 }}>
+        <Text style={{ fontFamily: "'Barlow Condensed','思源黑体',sans-serif", fontSize: 170, fontWeight: 'bold', color: '#63A7D4', lineHeight: 1 }}>03</Text>
+    </Box>
+    <Box style={{ gap: 18, zIndex: 1 }}>
+        <Text style={{ fontSize: 16, color: '#8FBCE4', letterSpacing: 3 }}>CHAPTER 03</Text>
+        <Text style={{ fontSize: 64, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.2 }}>技术实现</Text>
+        <Text style={{ fontSize: 21, color: '#A9CFE7', lineHeight: 1.5 }}>约 6.6 万行自研代码：规则内核 + 四智能体 + 可降级的模型链路，214 个 API 端点支撑 35 个业务页面</Text>
+    </Box>
+</Slide>

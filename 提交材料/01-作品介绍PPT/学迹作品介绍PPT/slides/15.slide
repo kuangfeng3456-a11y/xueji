@@ -1,0 +1,10 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521', justifyContent: 'center', alignItems: 'center' }}>
+    <Box style={{ gap: 26, alignItems: 'center' }}>
+        <Text style={{ fontSize: 40, fontWeight: 'bold', color: '#FFFFFF', textAlign: 'center', lineHeight: 1.4 }}>让每一个备考的人，都有一位<br />跟得上自己状态的教练</Text>
+        <Box style={{ background: '#FFFFFF', borderRadius: 8, padding: 16, alignItems: 'center' }}>
+            <QRCode text='https://wbapp-kc0ivx6yyvjamhhahvuqvz.app.workbuddy.host/?sharecode=K3KVQSLGR3' width={180} darkColor='#0B1521' lightColor='#FFFFFF' errorCorrectionLevel='Q' />
+        </Box>
+        <Text style={{ fontSize: 17, color: '#A9CFE7', textAlign: 'center' }}>扫码体验线上演示 · 账号 demo / demo1234</Text>
+        <Text style={{ fontSize: 16, color: '#C9CCCE', textAlign: 'center' }}>学迹团队 · 第十一届华为 ICT 大赛创新赛 · 2026 年 11 月</Text>
+    </Box>
+</Slide>

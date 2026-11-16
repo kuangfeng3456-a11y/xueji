@@ -1,0 +1,10 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521', position: 'relative', justifyContent: 'center' }}>
+    <Box style={{ position: 'absolute', right: 60, top: 60, opacity: 0.14 }}>
+        <Text style={{ fontFamily: "'Barlow Condensed','思源黑体',sans-serif", fontSize: 170, fontWeight: 'bold', color: '#63A7D4', lineHeight: 1 }}>02</Text>
+    </Box>
+    <Box style={{ gap: 18, zIndex: 1 }}>
+        <Text style={{ fontSize: 16, color: '#8FBCE4', letterSpacing: 3 }}>CHAPTER 02</Text>
+        <Text style={{ fontSize: 64, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.2 }}>核心创新</Text>
+        <Text style={{ fontSize: 21, color: '#A9CFE7', lineHeight: 1.5 }}>十项创新围绕同一个问题：如何把「学得怎么样」变成可计算、可解释的决策</Text>
+    </Box>
+</Slide>

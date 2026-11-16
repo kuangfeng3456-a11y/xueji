@@ -1,0 +1,63 @@
+# 生产/演示编排。启动前先复制环境变量文件并填入自己的口令：
+#   copy .env.example .env（Windows）/ cp .env.example .env
+# 带 :? 的变量缺失时 compose 直接拒绝启动 —— 刻意设计，
+# 避免「忘记改口令、带着默认弱口令上线」。
+services:
+  db:
+    image: mysql:8.0
+    container_name: xueji-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_R...?DB_ROOT_PASSWORD 未设置，请在 .env 中配置}
+      MYSQL_DATABASE: ${DB_NAME:-xueji}
+      MYSQL_USER: ${DB_USER:-xueji}
+      MYSQL_PASSWORD: ${DB_P...?DB_PASSWORD 未设置，请在 .env 中配置}
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+    volumes:
+      - xueji-db-data:/var/lib/mysql
+    healthcheck:
+      # 用 $$ 转义让凭据在容器内从环境变量读取，不在宿主机 compose 渲染结果中出现
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -u$$MYSQL_USER -p$$MYSQL_PASSWORD"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  redis:
+    image: redis:7-alpine
+    container_name: xueji-redis
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - xueji-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  app:
+    build: .
+    container_name: xueji-app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: mysql+pymysql://${DB_USER:-xueji}:${DB_PASSWORD}@db:3306/${DB_NAME:-xueji}?charset=utf8mb4
+      REDIS_URL: redis://redis:6379/0
+      SECRET_KEY: ${SECR...?SECRET_KEY 未设置，请在 .env 中配置随机长串}
+      LLM_BASE_URL: ${LLM_BASE_URL:-}
+      LLM_API_KEY: ${LLM_API_KEY:-}
+      LLM_MODEL: ${LLM_MODEL:-pangu}
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:8000}
+    ports:
+      - "8000:8000"
+    command: ["sh", "-c", "python -m app.seed && python run.py --host 0.0.0.0 --port 8000"]
+
+volumes:
+  xueji-db-data:
+  xueji-redis-data:

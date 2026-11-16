@@ -1,0 +1,40 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521' }}>
+    <Box style={{ gap: 8 }}>
+        <Text style={{ fontSize: 14, color: '#8FBCE4', letterSpacing: 2 }}>04 · 华为云与落地</Text>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>工程厚度：一套完整交付，而不是一个演示原型</Text>
+        <Box style={{ width: '100%', height: 1, background: '#3A5A78', marginTop: 6 }} />
+    </Box>
+    <Box style={{ marginTop: 40, gap: 8 }}>
+        <Box style={{ flexDirection: 'row', alignItems: 'flex-end', gap: 16 }}>
+            <Text style={{ fontFamily: "'Barlow Condensed','思源黑体',sans-serif", fontSize: 108, fontWeight: 'bold', color: '#63A7D4', lineHeight: 1 }}>6.6</Text>
+            <Text style={{ fontSize: 20, color: '#C9CCCE', paddingBottom: 8 }}>万行 · 自研代码</Text>
+        </Box>
+        <Text style={{ fontSize: 19, color: '#E7E8E9', lineHeight: 1.5 }}>后端 35,155 行 + 前端 31,468 行，全部从零实现，含自建前端构建链与纯函数规则引擎</Text>
+    </Box>
+    <Box style={{ flexDirection: 'row', gap: 24, marginTop: 44, flex: 1 }}>
+        <Box style={{ flex: 1, gap: 6 }}>
+            <Text style={{ fontFamily: "'Barlow Condensed','思源黑体',sans-serif", fontSize: 52, fontWeight: 'bold', color: '#FFFFFF' }}>214</Text>
+            <Text style={{ fontSize: 16, color: '#C9CCCE' }}>API 端点</Text>
+        </Box>
+        <Box style={{ flex: 1, gap: 6 }}>
+            <Text style={{ fontFamily: "'Barlow Condensed','思源黑体',sans-serif", fontSize: 52, fontWeight: 'bold', color: '#FFFFFF' }}>35</Text>
+            <Text style={{ fontSize: 16, color: '#C9CCCE' }}>前端业务页面</Text>
+        </Box>
+        <Box style={{ flex: 1, gap: 6 }}>
+            <Text style={{ fontFamily: "'Barlow Condensed','思源黑体',sans-serif", fontSize: 52, fontWeight: 'bold', color: '#FFFFFF' }}>54</Text>
+            <Text style={{ fontSize: 16, color: '#C9CCCE' }}>数据表</Text>
+        </Box>
+        <Box style={{ flex: 1, gap: 6 }}>
+            <Text style={{ fontFamily: "'Barlow Condensed','思源黑体',sans-serif", fontSize: 52, fontWeight: 'bold', color: '#FFFFFF' }}>900+</Text>
+            <Text style={{ fontSize: 16, color: '#C9CCCE' }}>自动化测试用例</Text>
+        </Box>
+        <Box style={{ flex: 1, gap: 6 }}>
+            <Text style={{ fontFamily: "'Barlow Condensed','思源黑体',sans-serif", fontSize: 52, fontWeight: 'bold', color: '#FFFFFF' }}>15</Text>
+            <Text style={{ fontSize: 16, color: '#C9CCCE' }}>可复用 Skill 包</Text>
+        </Box>
+    </Box>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 18 }}>
+        <Text style={{ fontSize: 14, color: '#C9CCCE' }}>学迹 · 自适应 AI 学习教练</Text>
+        <Text style={{ fontSize: 14, color: '#C9CCCE' }}>14 / 15</Text>
+    </Box>
+</Slide>

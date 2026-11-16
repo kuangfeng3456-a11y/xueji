@@ -1,0 +1,41 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521' }}>
+    <Box style={{ gap: 8 }}>
+        <Text style={{ fontSize: 14, color: '#8FBCE4', letterSpacing: 2 }}>03 · 技术实现</Text>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>核心设计：规则管事实，模型管表达</Text>
+        <Box style={{ width: '100%', height: 1, background: '#3A5A78', marginTop: 6 }} />
+    </Box>
+    <Box style={{ flexDirection: 'row', gap: 0, marginTop: 28, flex: 1, alignItems: 'stretch' }}>
+        <Box style={{ width: 565, background: '#232C37', borderRadius: 8, padding: 28, gap: 14 }}>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#63A7D4' }}>规则内核 · 管事实</Text>
+            <Box style={{ gap: 10 }}>
+                <Text style={{ fontSize: 17, color: '#E7E8E9', lineHeight: 1.5 }}>· 掌握度：BKT-lite 贝叶斯追踪，证据加权 + ±0.30 防抖</Text>
+                <Text style={{ fontSize: 17, color: '#E7E8E9', lineHeight: 1.5 }}>· 遗忘保持率：R(t) = 0.9^(t/S)，答错稳定度重置</Text>
+                <Text style={{ fontSize: 17, color: '#E7E8E9', lineHeight: 1.5 }}>· 收益密度排程：ρ = V / 分钟，先修门控 G</Text>
+                <Text style={{ fontSize: 17, color: '#E7E8E9', lineHeight: 1.5 }}>· 任务优先级：权重 × (1−掌握度) × 临近系数</Text>
+                <Text style={{ fontSize: 17, color: '#E7E8E9', lineHeight: 1.5 }}>· 考试日预测：蒙特卡洛 1000 次采样，P10–P90 区间</Text>
+                <Text style={{ fontSize: 17, color: '#E7E8E9', lineHeight: 1.5 }}>· 最小扰动重排：D ≤ 0.3 自动执行，超出需确认</Text>
+            </Box>
+        </Box>
+        <Box style={{ width: 30, alignItems: 'center', justifyContent: 'center' }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#8FBCE4' }}>VS</Text>
+        </Box>
+        <Box style={{ width: 565, background: '#232C37', borderRadius: 8, padding: 28, gap: 14 }}>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#A9CFE7' }}>模型层 · 管表达</Text>
+            <Box style={{ gap: 10 }}>
+                <Text style={{ fontSize: 17, color: '#E7E8E9', lineHeight: 1.5 }}>· 错因语义归因，输出做枚举校验，非法即回退规则</Text>
+                <Text style={{ fontSize: 17, color: '#E7E8E9', lineHeight: 1.5 }}>· 计划摘要与提醒文案润色，不改变排程结果</Text>
+                <Text style={{ fontSize: 17, color: '#E7E8E9', lineHeight: 1.5 }}>· 苏格拉底讲解、语音教练：SSE 流式输出</Text>
+                <Text style={{ fontSize: 17, color: '#E7E8E9', lineHeight: 1.5 }}>· 统一信封校验：data / evidence_refs / confidence</Text>
+                <Text style={{ fontSize: 17, color: '#E7E8E9', lineHeight: 1.5 }}>· 校验不通过自动回退规则文案，并如实标注原因</Text>
+                <Text style={{ fontSize: 17, color: '#E7E8E9', lineHeight: 1.5 }}>· 19 条提示词版本化注册 + 全量调用审计</Text>
+            </Box>
+        </Box>
+    </Box>
+    <Box style={{ background: '#63A7D4', borderRadius: 8, padding: '16px 28px', marginTop: 24 }}>
+        <Text style={{ fontSize: 19, color: '#FFFFFF' }}><span style={{ fontWeight: 'bold' }}>为什么这样分：</span>大模型只负责理解语义与生成文字，事实全部由可复算规则产生——答辩时每个数字都能逐条解释</Text>
+    </Box>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 18 }}>
+        <Text style={{ fontSize: 14, color: '#C9CCCE' }}>学迹 · 自适应 AI 学习教练</Text>
+        <Text style={{ fontSize: 14, color: '#C9CCCE' }}>11 / 15</Text>
+    </Box>
+</Slide>

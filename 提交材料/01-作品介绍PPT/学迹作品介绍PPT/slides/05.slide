@@ -1,0 +1,51 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521' }}>
+    <Box style={{ gap: 8 }}>
+        <Text style={{ fontSize: 14, color: '#8FBCE4', letterSpacing: 2 }}>01 · 背景与方案</Text>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>一个跟着状态走的闭环：生成 → 执行 → 反馈 → 重排</Text>
+        <Box style={{ width: '100%', height: 1, background: '#3A5A78', marginTop: 6 }} />
+    </Box>
+    <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 36, flex: 1 }}>
+        <Box style={{ background: '#232C37', borderRadius: 8, padding: 18, width: 163, height: 190, justifyContent: 'flex-start' }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#63A7D4', marginBottom: 8 }}>STEP 1</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8 }}>资料导入</Text>
+            <Text style={{ fontSize: 15, color: '#C9CCCE', lineHeight: 1.45 }}>粘贴或上传文档，自动抽取知识点树</Text>
+        </Box>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#63A7D4' }}>→</Text>
+        <Box style={{ background: '#232C37', borderRadius: 8, padding: 18, width: 163, height: 190, justifyContent: 'flex-start' }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#63A7D4', marginBottom: 8 }}>STEP 2</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8 }}>计划生成</Text>
+            <Text style={{ fontSize: 15, color: '#C9CCCE', lineHeight: 1.45 }}>按倒计时与优先级排每日三个微任务</Text>
+        </Box>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#63A7D4' }}>→</Text>
+        <Box style={{ background: '#232C37', borderRadius: 8, padding: 18, width: 163, height: 190, justifyContent: 'flex-start' }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#63A7D4', marginBottom: 8 }}>STEP 3</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8 }}>执行打卡</Text>
+            <Text style={{ fontSize: 15, color: '#C9CCCE', lineHeight: 1.45 }}>强制专注模式 + 摄像头学习见证</Text>
+        </Box>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#63A7D4' }}>→</Text>
+        <Box style={{ background: '#232C37', borderRadius: 8, padding: 18, width: 163, height: 190, justifyContent: 'flex-start' }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#63A7D4', marginBottom: 8 }}>STEP 4</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8 }}>错题归因</Text>
+            <Text style={{ fontSize: 15, color: '#C9CCCE', lineHeight: 1.45 }}>四类错因归档，实时更新掌握度</Text>
+        </Box>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#63A7D4' }}>→</Text>
+        <Box style={{ background: '#232C37', borderRadius: 8, padding: 18, width: 163, height: 190, justifyContent: 'flex-start' }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#63A7D4', marginBottom: 8 }}>STEP 5</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8 }}>动态重排</Text>
+            <Text style={{ fontSize: 15, color: '#C9CCCE', lineHeight: 1.45 }}>逾期、错题、临考自动调整计划</Text>
+        </Box>
+        <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#63A7D4' }}>→</Text>
+        <Box style={{ background: '#232C37', borderRadius: 8, padding: 18, width: 163, height: 190, justifyContent: 'flex-start' }}>
+            <Text style={{ fontSize: 16, fontWeight: 'bold', color: '#63A7D4', marginBottom: 8 }}>STEP 6</Text>
+            <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 8 }}>周报复盘</Text>
+            <Text style={{ fontSize: 15, color: '#C9CCCE', lineHeight: 1.45 }}>完成率、掌握度变化与下周重点</Text>
+        </Box>
+    </Box>
+    <Box style={{ background: '#63A7D4', borderRadius: 8, padding: '16px 28px', marginTop: 24 }}>
+        <Text style={{ fontSize: 19, color: '#FFFFFF' }}><span style={{ fontWeight: 'bold' }}>关键差异：</span>落后、错题增多、临近考试时计划自动调整，且每一次调整都给出「为什么这样安排」的理由</Text>
+    </Box>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 18 }}>
+        <Text style={{ fontSize: 14, color: '#C9CCCE' }}>学迹 · 自适应 AI 学习教练</Text>
+        <Text style={{ fontSize: 14, color: '#C9CCCE' }}>05 / 15</Text>
+    </Box>
+</Slide>

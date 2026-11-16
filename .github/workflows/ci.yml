@@ -1,0 +1,66 @@
+name: CI
+
+# 说明：本仓库参赛材料中宣称的 CodeArts 流水线（见 codearts-pipeline.yml）
+# 无法在本地环境验证，本文件提供一套等价、真实可运行的 GitHub Actions 流水线，
+# 阶段与文档 D6 对齐：安装依赖 → 测试 → 构建前端 → 构建镜像（不推送）。
+# 迁移到 CodeArts 时，把各 step 换成对应构建步骤即可。
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: 安装依赖（requirements.txt 中云 SDK 均为可选注释项，不会安装失败）
+        run: pip install -r requirements.txt
+
+      - name: 语法编译检查
+        run: python -m compileall -q app
+
+      - name: 单元与接口测试
+        # 测试夹具已强制：SQLite 临时库 + 内存缓存 + LLM 置空，
+        # 因此 CI 无需配置任何密钥，也不会产生云端调用
+        run: pytest -q --tb=short
+
+  frontend-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: 构建前端产物
+        working-directory: frontend
+        run: |
+          npm install --no-audit --no-fund
+          npm run build
+
+      - name: 校验产物存在
+        run: test -f frontend/dist/index.html
+
+  docker-build:
+    needs: [backend-test, frontend-build]
+    runs-on: ubuntu-latest
+    if: github.event_name != 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+      # 只验证镜像可构建；推送 SWR 需自建 Secret 后补充 login/push 步骤，
+      # 此处刻意不包含任何凭据
+      - name: 构建镜像（不推送）
+        run: docker build -t xueji-ci:${{ github.sha }} .

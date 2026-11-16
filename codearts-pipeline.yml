@@ -1,0 +1,97 @@
+# 华为云 CodeArts 流水线定义（文档 D6：构建 → 测试 → 镜像 → 滚动发布）
+#
+# ⚠️ 诚实声明：本文件按 CodeArts 流水线的公开概念（stage/job/step、SWR 镜像
+# 构建、CCE 滚动发布）编写，字段名与层级**需按 CodeArts 流水线的官方 YAML
+# 规范校对后再导入**——编写时无法访问 CodeArts 文档核对精确 schema。
+# 真正可立即运行的等价流水线见 .github/workflows/ci.yml。
+# 本文件不包含任何凭据；AK/SK、SWR 登录、CCE 集群信息一律通过
+# CodeArts 的凭据管理（与项目 DEW/CSMS 方案一致）注入，禁止写死。
+
+version: "1.0"
+name: xueji-ci-cd
+
+# 触发方式：代码提交 + 合并请求（与 CodeArts 控制台配置对应）
+triggers:
+  - type: code_push
+    branches: [main]
+  - type: merge_request
+
+stages:
+  - name: build_test
+    displayName: 构建与测试
+    jobs:
+      - name: backend_test
+        displayName: 后端测试
+        steps:
+          - step: PyPkgInstall
+            name: install_python_deps
+            inputs:
+              pythonVersion: "3.10"
+              installPath: backend
+              requirementsFile: backend/requirements.txt
+              # requirements.txt 中华为云 SDK 均为注释形式的可选依赖，
+              # 离线安装不会失败；云能力在缺 SDK 时按 sdk_missing 降级
+          - step: PyTest
+            name: run_tests
+            inputs:
+              workingDir: backend
+              command: pytest -q --tb=short
+              # 测试夹具强制 SQLite 临时库 + 内存缓存 + LLM 置空，
+              # CI 无需配置任何密钥，也不会产生真实云端调用
+
+      - name: frontend_build
+        displayName: 前端构建
+        steps:
+          - step: NpmBuild
+            name: build_frontend
+            inputs:
+              nodeVersion: "20"
+              workingDir: frontend
+              installCommand: npm install --no-audit --no-fund
+              buildCommand: npm run build
+              artifacts: frontend/dist
+
+  - name: image
+    displayName: 镜像构建与推送
+    dependsOn: [build_test]
+    jobs:
+      - name: docker_build_push
+        steps:
+          - step: DockerBuild
+            name: build_image
+            inputs:
+              dockerfilePath: Dockerfile
+              # 镜像名：swr.<region>.myhuaweicloud.com/<组织名>/xueji
+              # SWR 登录凭据来自流水线凭据管理，不在本文件出现
+              imageName: ${SWR_NAMESPACE}/xueji
+              imageTag: ${CI_COMMIT_SHA}
+          - step: SwrPush
+            name: push_to_swr
+            inputs:
+              region: cn-north-4
+              # 凭据通过流水线凭据引用注入
+              credential: swr-push-credential
+
+  - name: deploy
+    displayName: CCE 滚动发布
+    dependsOn: [image]
+    # 仅 main 分支发布；发布前需人工卡点（CodeArts 人工审批任务），
+    # 与「对外操作谨慎」红线一致
+    triggerMode: manual_approval
+    jobs:
+      - name: cce_rolling
+        steps:
+          - step: KubectlApply
+            name: rolling_update
+            inputs:
+              clusterCredential: cce-xueji-cluster   # 凭据引用，非明文
+              workload: deployment/xueji-app
+              image: ${SWR_NAMESPACE}/xueji:${CI_COMMIT_SHA}
+              strategy: RollingUpdate
+              maxUnavailable: 0
+              maxSurge: 1
+          - step: HealthGate
+            name: verify_rollout
+            inputs:
+              command: curl -fsS http://xueji-app:8000/api/health
+              retry: 5

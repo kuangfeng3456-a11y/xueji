@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>学迹 · 自适应 AI 学习教练 — 官网首页设计方案</title>
+<style>
+/* ==========================================================
+   学迹官网首页 · 设计方案 v1.0
+   设计语言：纸感底色 × 深蓝科技 × 发丝线 × 衬线大标题
+   ========================================================== */
+:root {
+  --paper: #f7f5f0;
+  --panel: #fffdf9;
+  --ink: #14202e;
+  --ink-2: #3c4a58;
+  --ink-3: #7d8894;
+  --line: #e5e0d4;
+  --line-soft: #ede9de;
+  --navy: #0c142e;
+  --navy-2: #132a5e;
+  --blue: #2563eb;
+  --blue-deep: #1d4ed8;
+  --teal: #0d9488;
+  --accent: #bf452b;
+  --gold: #a8813a;
+  --serif: "Noto Serif SC", "Songti SC", "STSong", Georgia, serif;
+  --sans: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+  --mono: "SFMono-Regular", "JetBrains Mono", Consolas, monospace;
+  --shadow-soft: 0 24px 60px -28px rgba(12, 20, 46, 0.22);
+  --shadow-card: 0 10px 32px -18px rgba(12, 20, 46, 0.16);
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: var(--sans);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.75;
+  -webkit-font-smoothing: antialiased;
+}
+a { color: inherit; text-decoration: none; }
+img, svg { display: block; }
+
+::selection { background: rgba(37, 99, 235, 0.14); }
+
+/* ---------- 通用 ---------- */
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 32px; }
+.eyebrow {
+  display: inline-flex; align-items: center; gap: 10px;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.22em;
+  color: var(--ink-3); text-transform: uppercase;
+}
+.eyebrow::before {
+  content: ""; width: 26px; height: 1px; background: var(--gold);
+}
+.eyebrow .no { font-family: var(--mono); color: var(--gold); letter-spacing: 0.08em; }
+.h-serif { font-family: var(--serif); font-weight: 600; letter-spacing: 0.02em; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 13px 26px; border-radius: 8px; border: 1px solid transparent;
+  font-size: 14px; font-weight: 600; letter-spacing: 0.04em;
+  cursor: pointer; transition: all 0.22s var(--ease);
+}
+.btn-primary { background: var(--navy); color: #f4f8ff; }
+.btn-primary:hover { background: var(--navy-2); transform: translateY(-2px); box-shadow: 0 14px 30px -14px rgba(12,20,46,.5); }
+.btn-blue { background: var(--blue); color: #fff; }
+.btn-blue:hover { background: var(--blue-deep); transform: translateY(-2px); box-shadow: 0 14px 30px -12px rgba(37,99,235,.5); }
+.btn-ghost { border-color: var(--line); color: var(--ink-2); background: transparent; }
+.btn-ghost:hover { border-color: var(--ink); color: var(--ink); }
+.section { padding: 110px 0; position: relative; }
+.section-head { max-width: 620px; margin-bottom: 56px; }
+.section-head h2 { font-size: 36px; line-height: 1.3; margin: 16px 0 14px; }
+.section-head p { color: var(--ink-2); font-size: 15px; }
+
+/* 滚动渐入 */
+.reveal { opacity: 0; transform: translateY(26px); transition: opacity .8s var(--ease), transform .8s var(--ease); }
+.reveal.in { opacity: 1; transform: none; }
+
+/* ---------- 导航 ---------- */
+.nav {
+  position: sticky; top: 0; z-index: 50;
+  background: rgba(247, 245, 240, 0.82);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid transparent;
+  transition: border-color .3s ease, box-shadow .3s ease;
+}
+.nav.scrolled { border-bottom-color: var(--line); box-shadow: 0 8px 30px -18px rgba(12,20,46,.18); }
+.nav-inner { display: flex; align-items: center; gap: 40px; height: 72px; }
+.brand { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, #16306a, #0d9488);
+  display: grid; place-items: center;
+  font-family: var(--serif); font-weight: 700; font-size: 17px; color: #fff;
+}
+.brand-name { font-family: var(--serif); font-size: 20px; letter-spacing: 0.12em; }
+.nav-links { display: flex; gap: 34px; margin-left: 12px; }
+.nav-links a { font-size: 13.5px; color: var(--ink-2); position: relative; padding: 6px 0; }
+.nav-links a::after {
+  content: ""; position: absolute; left: 0; bottom: 0; width: 0; height: 1.5px;
+  background: var(--ink); transition: width .25s var(--ease);
+}
+.nav-links a:hover { color: var(--ink); }
+.nav-links a:hover::after { width: 100%; }
+.nav-cta { margin-left: auto; display: flex; align-items: center; gap: 18px; }
+.nav-cta .login { font-size: 13.5px; color: var(--ink-2); }
+.nav-cta .login:hover { color: var(--ink); }
+.nav-cta .btn { padding: 9px 20px; }
+
+/* ---------- Hero ---------- */
+.hero {
+  position: relative; overflow: hidden;
+  padding: 96px 0 0;
+}
+.hero-bg {
+  position: absolute; inset: 0; pointer-events: none;
+}
+.hero-bg .glow {
+  position: absolute; border-radius: 50%; filter: blur(90px); opacity: .55;
+}
+.hero-bg .g1 { width: 640px; height: 460px; right: -160px; top: -180px;
+  background: radial-gradient(closest-side, rgba(96,165,250,.4), transparent); }
+.hero-bg .g2 { width: 520px; height: 420px; left: -180px; top: 160px;
+  background: radial-gradient(closest-side, rgba(13,148,136,.22), transparent); }
+.hero-bg .grid-lines {
+  position: absolute; inset: 0;
+  background-image:
+    linear-gradient(rgba(20,32,46,0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(20,32,46,0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 0%, #000 30%, transparent 75%);
+}
+.hero-inner { position: relative; text-align: center; max-width: 860px; margin: 0 auto; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 10px;
+  padding: 7px 18px; border: 1px solid var(--line); border-radius: 999px;
+  background: rgba(255,253,249,.7); backdrop-filter: blur(6px);
+  font-size: 12.5px; color: var(--ink-2); letter-spacing: 0.06em;
+}
+.hero-badge .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal);
+  box-shadow: 0 0 0 4px rgba(13,148,136,.14); }
+.hero h1 {
+  font-family: var(--serif); font-weight: 600;
+  font-size: 62px; line-height: 1.22; letter-spacing: 0.015em;
+  margin: 30px 0 22px;
+}
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(100deg, #16306a 10%, #2563eb 55%, #0d9488 95%);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-sub { font-size: 16.5px; color: var(--ink-2); max-width: 620px; margin: 0 auto 36px; }
+.hero-actions { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+.hero-note { margin-top: 18px; font-size: 12.5px; color: var(--ink-3); letter-spacing: .04em; }
+.hero-note code { font-family: var(--mono); font-size: 11.5px; color: var(--gold); }
+
+/* 产品预览窗口 */
+.hero-showcase { position: relative; margin: 72px auto 0; max-width: 1020px; padding: 0 32px; }
+.window {
+  background: #fff; border: 1px solid var(--line); border-radius: 18px 18px 0 0;
+  box-shadow: var(--shadow-soft);
+  overflow: hidden;
+  border-bottom: 0;
+}
+.window-bar {
+  display: flex; align-items: center; gap: 8px;
+  padding: 13px 18px; border-bottom: 1px solid var(--line-soft); background: #faf8f3;
+}
+.window-bar i { width: 11px; height: 11px; border-radius: 50%; background: var(--line); }
+.window-bar i:nth-child(1) { background: #e8b4a8; }
+.window-bar i:nth-child(2) { background: #ecd9a8; }
+.window-bar i:nth-child(3) { background: #b4d4c0; }
+.window-url {
+  margin-left: 14px; flex: 1; max-width: 380px;
+  font-family: var(--mono); font-size: 11px; color: var(--ink-3);
+  background: var(--paper); border: 1px solid var(--line-soft);
+  border-radius: 6px; padding: 4px 12px;
+}
+.window-body { display: grid; grid-template-columns: 190px 1fr; min-height: 430px; }
+.win-side {
+  border-right: 1px solid var(--line-soft); background: linear-gradient(172deg,#0c142e,#132a5e);
+  padding: 20px 14px; display: flex; flex-direction: column; gap: 6px;
+}
+.win-side .s-brand { font-family: var(--serif); color: #fff; letter-spacing: .14em; font-size: 15px; padding: 4px 10px 16px; }
+.win-side span {
+  font-size: 12px; color: #b6c2d9; padding: 9px 12px; border-radius: 8px;
+}
+.win-side span.on { background: rgba(96,165,250,.16); color: #fff; }
+.win-side span i { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #60a5fa; margin-right: 9px; opacity:.5; vertical-align: 1px;}
+.win-side span.on i { opacity: 1; }
+.win-main { padding: 26px 30px; background: #fcfbf7; }
+.win-main .wm-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; }
+.win-main .wm-head b { font-family: var(--serif); font-size: 19px; }
+.win-main .wm-head small { font-size: 11.5px; color: var(--ink-3); font-family: var(--mono); }
+.win-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 22px; }
+.win-stat { background: #fff; border: 1px solid var(--line-soft); border-radius: 12px; padding: 13px 15px; }
+.win-stat label { display: block; font-size: 10.5px; letter-spacing: .1em; color: var(--ink-3); }
+.win-stat strong { font-family: var(--serif); font-size: 21px; font-weight: 600; }
+.win-stat strong.t { color: var(--teal); } .win-stat strong.a { color: var(--accent); }
+.win-chart {
+  background: #fff; border: 1px solid var(--line-soft); border-radius: 12px; padding: 16px 18px 10px;
+}
+.win-chart label { font-size: 10.5px; letter-spacing: .1em; color: var(--ink-3); display:block; margin-bottom: 6px;}
+.hero-floor {
+  height: 140px;
+  background: linear-gradient(180deg, var(--paper) 0%, #efece3 100%);
+  margin-top: 0;
+}
+
+/* ---------- 数据条 ---------- */
+.metrics-band { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--panel); }
+.metrics-inner { display: grid; grid-template-columns: repeat(4, 1fr); }
+.metric {
+  padding: 40px 20px; text-align: center;
+  border-left: 1px solid var(--line-soft);
+}
+.metric:first-child { border-left: 0; }
+.metric strong { display: block; font-family: var(--serif); font-size: 34px; font-weight: 600; letter-spacing: .01em; }
+.metric strong i { font-style: normal; font-size: 18px; color: var(--gold); margin-left: 2px; }
+.metric span { font-size: 12px; letter-spacing: .14em; color: var(--ink-3); }
+
+/* ---------- 痛点方案 ---------- */
+.pains { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.pain {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+  padding: 32px 28px; position: relative; overflow: hidden;
+  transition: transform .3s var(--ease), box-shadow .3s var(--ease);
+}
+.pain:hover { transform: translateY(-5px); box-shadow: var(--shadow-card); }
+.pain .num {
+  font-family: var(--mono); font-size: 12px; color: var(--gold); letter-spacing: .1em;
+}
+.pain h3 { font-family: var(--serif); font-size: 20px; margin: 14px 0 10px; }
+.pain p { font-size: 13.5px; color: var(--ink-2); }
+.pain .fix {
+  margin-top: 18px; padding-top: 14px; border-top: 1px dashed var(--line);
+  font-size: 13px; color: var(--ink); display: flex; gap: 8px; align-items: baseline;
+}
+.pain .fix b { color: var(--teal); font-weight: 700; white-space: nowrap; font-size: 12px; letter-spacing: .08em; }
+
+/* ---------- 闭环 ---------- */
+.loop { background: var(--navy); color: #eef3fb; position: relative; overflow: hidden; }
+.loop::before {
+  content: ""; position: absolute; inset: 0;
+  background:
+    radial-gradient(700px 400px at 85% -10%, rgba(96,165,250,.16), transparent 60%),
+    radial-gradient(600px 380px at 0% 110%, rgba(13,148,136,.14), transparent 60%);
+}
+.loop .wrap { position: relative; }
+.loop .eyebrow { color: #93a7c9; }
+.loop .eyebrow::before { background: #5ea0ff; }
+.loop .eyebrow .no { color: #5ea0ff; }
+.loop h2 { color: #fff; }
+.loop .section-head p { color: #b7c6e2; }
+.loop-steps { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0; position: relative; }
+.loop-step { padding: 0 22px; position: relative; }
+.loop-step:not(:last-child)::after {
+  content: ""; position: absolute; right: -14px; top: 26px;
+  width: 28px; height: 1px;
+  background: linear-gradient(90deg, rgba(126,166,255,.6), rgba(126,166,255,.1));
+}
+.loop-step .idx {
+  width: 52px; height: 52px; border-radius: 14px;
+  display: grid; place-items: center;
+  background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.14);
+  font-family: var(--serif); font-size: 19px; color: #9ec5ff;
+  margin-bottom: 18px;
+}
+.loop-step h3 { font-family: var(--serif); font-size: 18px; color: #fff; margin-bottom: 8px; }
+.loop-step p { font-size: 12.5px; color: #a9bcd8; line-height: 1.7; }
+.loop-step .tagline {
+  margin-top: 12px; display: inline-block; font-family: var(--mono);
+  font-size: 10.5px; color: #6fd3c3; border: 1px solid rgba(111,211,195,.3);
+  padding: 3px 10px; border-radius: 999px;
+}
+
+/* ---------- 功能矩阵 ---------- */
+.feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.feature {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+  padding: 30px 28px; transition: all .3s var(--ease);
+  display: flex; flex-direction: column;
+}
+.feature:hover { border-color: #c8d3ea; box-shadow: var(--shadow-card); transform: translateY(-4px); }
+.feature .f-icon {
+  width: 46px; height: 46px; border-radius: 12px; margin-bottom: 20px;
+  display: grid; place-items: center;
+  background: linear-gradient(135deg, rgba(22,48,106,.08), rgba(13,148,136,.08));
+  border: 1px solid var(--line-soft);
+  font-size: 20px;
+}
+.feature h3 { font-family: var(--serif); font-size: 19px; margin-bottom: 8px; }
+.feature p { font-size: 13.5px; color: var(--ink-2); flex: 1; }
+.feature .f-link {
+  margin-top: 18px; font-size: 12.5px; font-weight: 700; color: var(--blue-deep);
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.feature .f-link::after { content: "→"; transition: transform .2s var(--ease); }
+.feature:hover .f-link::after { transform: translateX(4px); }
+.feature.wide { grid-column: span 2; flex-direction: row; gap: 30px; align-items: center; }
+.feature.wide .f-copy { flex: 1; }
+.feature.wide .f-viz { width: 250px; flex: none; }
+
+/* ---------- 可解释 AI（深色引言段） ---------- */
+.trust { background: #fbfaf6; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.trust-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; align-items: center; }
+.trust-copy h2 { font-size: 34px; line-height: 1.35; margin: 16px 0 18px; }
+.trust-copy h2 em { font-style: normal; color: var(--blue-deep); }
+.trust-copy > p { color: var(--ink-2); font-size: 14.5px; }
+.trust-list { margin-top: 26px; display: flex; flex-direction: column; }
+.trust-list li {
+  list-style: none; display: flex; gap: 14px; padding: 13px 0;
+  border-bottom: 1px solid var(--line-soft); font-size: 13.5px; color: var(--ink-2);
+}
+.trust-list li:first-child { border-top: 1px solid var(--line-soft); }
+.trust-list li b { font-family: var(--mono); color: var(--gold); font-weight: 600; white-space: nowrap; }
+.evidence-card {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+  box-shadow: var(--shadow-soft); padding: 26px 28px;
+}
+.evidence-card .ec-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-bottom: 14px; border-bottom: 1px solid var(--line-soft); margin-bottom: 8px;
+}
+.evidence-card .ec-head b { font-family: var(--serif); font-size: 16px; }
+.evidence-card .ec-head span {
+  font-family: var(--mono); font-size: 10.5px; color: var(--teal);
+  border: 1px solid rgba(13,148,136,.35); border-radius: 999px; padding: 2px 10px;
+}
+.ev-row {
+  display: flex; justify-content: space-between; gap: 16px;
+  padding: 11px 0; border-bottom: 1px solid var(--line-soft); font-size: 12.5px;
+}
+.ev-row:last-child { border-bottom: 0; }
+.ev-row span { color: var(--ink-3); }
+.ev-row b { font-weight: 500; font-family: var(--mono); font-size: 11.5px; }
+.ev-row b.ok { color: var(--teal); }
+.ev-row b.fix { color: var(--gold); }
+
+/* ---------- 证言 ---------- */
+.quotes { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px; }
+.quote {
+  background: var(--panel); border: 1px solid var(--line); border-radius: 16px;
+  padding: 30px 28px; display: flex; flex-direction: column; gap: 18px;
+  transition: all .3s var(--ease);
+}
+.quote:hover { transform: translateY(-4px); box-shadow: var(--shadow-card); }
+.quote .mark { font-family: var(--serif); font-size: 40px; line-height: .6; color: var(--gold); }
+.quote p { font-size: 14px; color: var(--ink-2); flex: 1; }
+.quote .who { display: flex; align-items: center; gap: 12px; }
+.quote .who i {
+  width: 38px; height: 38px; border-radius: 50%; font-style: normal;
+  background: linear-gradient(135deg, #16306a, #0d9488);
+  color: #fff; display: grid; place-items: center; font-size: 13px; font-weight: 700;
+}
+.quote .who b { display: block; font-size: 13px; }
+.quote .who span { font-size: 11.5px; color: var(--ink-3); }
+
+/* ---------- 底部 CTA ---------- */
+.final-cta {
+  background:
+    radial-gradient(760px 420px at 78% -20%, rgba(96,165,250,.28), transparent 60%),
+    radial-gradient(600px 380px at 8% 120%, rgba(13,148,136,.2), transparent 58%),
+    linear-gradient(126deg, #0c142e 0%, #132a5e 58%, #0e3d4a 100%);
+  color: #eef3fb; text-align: center; overflow: hidden;
+}
+.final-cta h2 { font-family: var(--serif); font-size: 42px; color: #fff; line-height: 1.3; margin: 18px 0 16px; }
+.final-cta h2 em { font-style: normal; background: linear-gradient(90deg, #7cc4ff, #4fd1c5);
+  -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.final-cta p { color: #b7c6e2; max-width: 560px; margin: 0 auto 34px; font-size: 15px; }
+.final-cta .eyebrow { color: #93a7c9; }
+.final-cta .eyebrow::before { background: #5ea0ff; }
+.final-cta .eyebrow .no { color: #5ea0ff; }
+.final-cta .hero-note { color: #8ea3c5; }
+
+/* ---------- Footer ---------- */
+.footer { background: #0a1124; color: #8ea3c5; padding: 64px 0 40px; font-size: 13px; }
+.footer-grid { display: grid; grid-template-columns: 1.6fr repeat(3, 1fr); gap: 40px; padding-bottom: 44px; border-bottom: 1px solid rgba(142,163,197,.16); }
+.footer .brand-name { color: #fff; }
+.footer .f-desc { margin-top: 14px; max-width: 300px; font-size: 12.5px; line-height: 1.8; }
+.footer h4 { color: #dce6f5; font-size: 12px; letter-spacing: .16em; margin-bottom: 16px; font-weight: 600; }
+.footer ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer ul a:hover { color: #fff; }
+.footer-bottom { display: flex; justify-content: space-between; padding-top: 26px; font-size: 12px; color: #64789b; flex-wrap: wrap; gap: 10px; }
+
+/* ---------- 响应式 ---------- */
+@media (max-width: 1024px) {
+  .hero h1 { font-size: 46px; }
+  .loop-steps { grid-template-columns: repeat(3, 1fr); gap: 30px 0; }
+  .loop-step:nth-child(3)::after { display: none; }
+  .feature-grid { grid-template-columns: repeat(2, 1fr); }
+  .feature.wide { grid-column: span 2; }
+  .trust-inner { grid-template-columns: 1fr; gap: 40px; }
+  .footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 760px) {
+  .section { padding: 72px 0; }
+  .nav-links { display: none; }
+  .hero { padding-top: 64px; }
+  .hero h1 { font-size: 34px; }
+  .hero h1 em { display: inline-block; margin-top: 4px; }
+  .hero-sub { font-size: 14.5px; }
+  .metrics-inner { grid-template-columns: repeat(2, 1fr); }
+  .metric:nth-child(3) { border-left: 0; }
+  .metric { border-top: 1px solid var(--line-soft); }
+  .metric:nth-child(-n+2) { border-top: 0; }
+  .pains, .quotes, .feature-grid { grid-template-columns: 1fr; }
+  .feature.wide { grid-column: span 1; flex-direction: column; align-items: stretch; }
+  .feature.wide .f-viz { width: 100%; }
+  .loop-steps { grid-template-columns: 1fr; gap: 34px; }
+  .loop-step:not(:last-child)::after { display: none; }
+  .window-body { grid-template-columns: 1fr; }
+  .win-side { flex-direction: row; overflow-x: auto; padding: 12px; }
+  .win-side .s-brand { display: none; }
+  .win-side span { white-space: nowrap; }
+  .win-stats { grid-template-columns: repeat(2, 1fr); }
+  .hero-actions .btn { width: 100%; }
+  .footer-grid { grid-template-columns: 1fr; }
+  .wrap { padding: 0 20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============ 导航 ============ -->
+<header class="nav" id="nav">
+  <div class="wrap nav-inner">
+    <a class="brand" href="#">
+      <span class="brand-mark">迹</span>
+      <span class="brand-name">学迹</span>
+    </a>
+    <nav class="nav-links">
+      <a href="#features">产品能力</a>
+      <a href="#loop">工作原理</a>
+      <a href="#trust">为什么可信</a>
+      <a href="#pricing">方案</a>
+    </nav>
+    <div class="nav-cta">
+      <a class="login" href="#">登录</a>
+      <a class="btn btn-primary" href="#">免费开始</a>
+    </div>
+  </div>
+</header>
+
+<!-- ============ Hero ============ -->
+<section class="hero">
+  <div class="hero-bg">
+    <span class="grid-lines"></span>
+    <span class="glow g1"></span>
+    <span class="glow g2"></span>
+  </div>
+  <div class="wrap">
+    <div class="hero-inner">
+      <span class="hero-badge"><span class="dot"></span>自适应 AI 学习教练 · v2.0 全新升级</span>
+      <h1>计划不该静态<br />让每一天 <em>跟着状态生长</em></h1>
+      <p class="hero-sub">
+        学迹围绕你的掌握度、专注与疲劳持续感知，由智能体生成、执行、反馈并动态重排学习计划。
+        落后只是顺延，不是作废 —— 每一条建议都带数据依据，可追溯、可复算。
+      </p>
+      <div class="hero-actions">
+        <a class="btn btn-blue" href="#">免费开始，3 分钟生成计划</a>
+        <a class="btn btn-ghost" href="#loop">看看它如何思考 ↓</a>
+      </div>
+      <p class="hero-note">免费注册 · 数据可随时导出删除</p>
+    </div>
+
+    <!-- 产品预览 -->
+    <div class="hero-showcase reveal">
+      <div class="window">
+        <div class="window-bar"><i></i><i></i><i></i><span class="window-url">xueji.ai / 今日 · 学习驾驶舱</span></div>
+        <div class="window-body">
+          <aside class="win-side">
+            <div class="s-brand">学迹</div>
+            <span class="on"><i></i>今日</span>
+            <span><i></i>计划</span>
+            <span><i></i>练习与复盘</span>
+            <span><i></i>诊断与决策</span>
+            <span><i></i>协作与关怀</span>
+          </aside>
+          <div class="win-main">
+            <div class="wm-head"><b>小林，还有 39 天</b><small>大学英语四级 · CET-4</small></div>
+            <div class="win-stats">
+              <div class="win-stat"><label>整体准备度</label><strong>72%</strong></div>
+              <div class="win-stat"><label>今日任务</label><strong>6 项 · 120′</strong></div>
+              <div class="win-stat"><label>记忆保持</label><strong class="t">91%</strong></div>
+              <div class="win-stat"><label>疲劳指数</label><strong class="a">47</strong></div>
+            </div>
+            <div class="win-chart">
+              <label>掌握度 × 遗忘风险 · 近 14 天</label>
+              <svg viewBox="0 0 640 130" width="100%" height="118">
+                <defs>
+                  <linearGradient id="fill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stop-color="#2563eb" stop-opacity=".18"/>
+                    <stop offset="1" stop-color="#2563eb" stop-opacity="0"/>
+                  </linearGradient>
+                </defs>
+                <g stroke="#ede9de" stroke-width="1">
+                  <line x1="0" y1="32" x2="640" y2="32"/><line x1="0" y1="66" x2="640" y2="66"/><line x1="0" y1="100" x2="640" y2="100"/>
+                </g>
+                <path d="M0,96 L60,90 L120,92 L180,78 L240,70 L300,74 L360,58 L420,50 L480,54 L540,40 L600,34 L640,30 L640,130 L0,130 Z" fill="url(#fill)"/>
+                <path d="M0,96 L60,90 L120,92 L180,78 L240,70 L300,74 L360,58 L420,50 L480,54 L540,40 L600,34 L640,30"
+                      fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linecap="round"/>
+                <path d="M0,108 L60,104 L120,106 L180,100 L240,96 L300,97 L360,88 L420,84 L480,86 L540,76 L600,72 L640,68"
+                      fill="none" stroke="#0d9488" stroke-width="2" stroke-dasharray="1 6" stroke-linecap="round"/>
+                <circle cx="640" cy="30" r="4.5" fill="#2563eb"/>
+                <circle cx="640" cy="30" r="9" fill="#2563eb" opacity=".18"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-floor"></div>
+</section>
+
+<!-- ============ 数据条 ============ -->
+<section class="metrics-band">
+  <div class="wrap metrics-inner reveal">
+    <div class="metric"><strong>7<i>层</i></strong><span>AI 输出逐层校验</span></div>
+    <div class="metric"><strong>100<i>%</i></strong><span>AI 建议可追溯复算</span></div>
+    <div class="metric"><strong>4<i>类</i></strong><span>错题归因分析</span></div>
+    <div class="metric"><strong>3<i>档</i></strong><span>任务弹性力度自选</span></div>
+  </div>
+</section>
+
+<!-- ============ 痛点 → 方案 ============ -->
+<section class="section" id="features">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow"><span class="no">01</span> 为什么是学迹</span>
+      <h2 class="h-serif">备考真正的敌人<br />不是资料太少，而是系统失灵</h2>
+      <p>四个真实痛点，四个对应解法。学迹不是又一个聊天 AI，而是一套会自我纠偏的学习系统。</p>
+    </div>
+    <div class="pains">
+      <div class="pain reveal">
+        <span class="num">PAIN — 01</span>
+        <h3 class="h-serif">有资料，没计划</h3>
+        <p>面对一堆资料，不知道每天该学什么、学多少，拖延从第一周开始。</p>
+        <div class="fix"><b>解法</b>收益密度排程：按「每分钟收益」装入每天容量，难题排在你的峰值时段。</div>
+      </div>
+      <div class="pain reveal">
+        <span class="num">PAIN — 02</span>
+        <h3 class="h-serif">计划坚持不下去</h3>
+        <p>一次性生成的静态计划，落后一次就整份作废，挫败感让人放弃。</p>
+        <div class="fix"><b>解法</b>最小扰动重排：落后自动顺延、任务可降档为 5 分钟最小版，计划始终活着。</div>
+      </div>
+      <div class="pain reveal">
+        <span class="num">PAIN — 03</span>
+        <h3 class="h-serif">AI 的建议没法信</h3>
+        <p>通用 AI 每次都从零了解你，给了结论说不清依据，错了也无人负责。</p>
+        <div class="fix"><b>解法</b>规则管事实、模型管表达：每个数字可复算，每条建议挂证据链。</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 核心闭环 ============ -->
+<section class="section loop" id="loop">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow"><span class="no">02</span> 工作原理</span>
+      <h2 class="h-serif">五步自演进闭环</h2>
+      <p>从感知你的学习状态，到把计划调整为适合你的节奏 —— 系统每天自己进化，你只需要执行。</p>
+    </div>
+    <div class="loop-steps reveal">
+      <div class="loop-step">
+        <div class="idx">感</div>
+        <h3>感知</h3>
+        <p>采集作答、专注、疲劳与完成节奏，规整为一份学习者状态向量。</p>
+        <span class="tagline">LSV snapshot</span>
+      </div>
+      <div class="loop-step">
+        <div class="idx">决</div>
+        <h3>决策</h3>
+        <p>按掌握度、遗忘风险与先修关系计算每分钟收益，排出入今日容量。</p>
+        <span class="tagline">价值 / 分钟</span>
+      </div>
+      <div class="loop-step">
+        <div class="idx">执</div>
+        <h3>执行</h3>
+        <p>任务带时长与理由，支持标准 / 精简 / 最小三档弹性。</p>
+        <span class="tagline">三档弹性</span>
+      </div>
+      <div class="loop-step">
+        <div class="idx">馈</div>
+        <h3>反馈</h3>
+        <p>错题四类归因，掌握度与记忆稳定度即时更新。</p>
+        <span class="tagline">BKT-lite</span>
+      </div>
+      <div class="loop-step">
+        <div class="idx">进</div>
+        <h3>进化</h3>
+        <p>逾期顺延、疲劳降载、临考提密度；扰动度受控，大改必确认。</p>
+        <span class="tagline">D ≤ 0.3</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 功能矩阵 ============ -->
+<section class="section">
+  <div class="wrap">
+    <div class="section-head reveal">
+      <span class="eyebrow"><span class="no">03</span> 产品能力</span>
+      <h2 class="h-serif">不止安排任务<br />更回答「现在到底稳不稳」</h2>
+    </div>
+    <div class="feature-grid">
+      <div class="feature wide reveal">
+        <div class="f-copy">
+          <div class="f-icon">🛰️</div>
+          <h3 class="h-serif">学习驾驶舱</h3>
+          <p>准备度、风险与今日关键任务一屏呈现。预测不再给单点数字，而是 P10–P90 区间 —— 诚实面对不确定性。</p>
+          <a class="f-link" href="#">进入驾驶舱演示</a>
+        </div>
+        <div class="f-viz">
+          <svg viewBox="0 0 250 170" width="100%">
+            <rect x="0" y="0" width="250" height="170" rx="12" fill="#fff" stroke="#ede9de"/>
+            <text x="16" y="28" font-size="10" fill="#7d8894" letter-spacing="2">考试日得分预测</text>
+            <line x1="40" y1="118" x2="200" y2="118" stroke="#ede9de"/>
+            <line x1="58" y1="60" x2="58" y2="118" stroke="#2563eb" stroke-width="14" stroke-linecap="round" opacity=".18"/>
+            <line x1="125" y1="38" x2="125" y2="118" stroke="#2563eb" stroke-width="14" stroke-linecap="round"/>
+            <line x1="192" y1="52" x2="192" y2="118" stroke="#2563eb" stroke-width="14" stroke-linecap="round" opacity=".18"/>
+            <text x="46" y="140" font-size="10" fill="#7d8894">P10 58</text>
+            <text x="110" y="140" font-size="11" fill="#14202e" font-weight="700">P50 66</text>
+            <text x="178" y="140" font-size="10" fill="#7d8894">P90 73</text>
+          </svg>
+        </div>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon">🗺️</div>
+        <h3 class="h-serif">知识漏洞地图</h3>
+        <p>从错题沿先修依赖向上追溯，先列候选漏洞，再用验证题确认 —— 时间花在真正该补的地方。</p>
+        <a class="f-link" href="#">查看地图</a>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon">🧠</div>
+        <h3 class="h-serif">自适应遗忘曲线</h3>
+        <p>按你的记忆稳定度安排复习，目标保持率随阶段 0.85 → 0.95 递进。</p>
+        <a class="f-link" href="#">了解算法</a>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon">🛟</div>
+        <h3 class="h-serif">风险救援中心</h3>
+        <p>五类风险给出触发原因与调整前后对比，三档力度由你确认后才生效。</p>
+        <a class="f-link" href="#">了解救援</a>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon">🔬</div>
+        <h3 class="h-serif">策略实验室</h3>
+        <p>用 3 天小实验测量精读、刷题、闪卡对你的真实收益，方法选择不再靠感觉。</p>
+        <a class="f-link" href="#">开始实验</a>
+      </div>
+      <div class="feature reveal">
+        <div class="f-icon">🌙</div>
+        <h3 class="h-serif">恢复站</h3>
+        <p>疲劳偏高时主动推荐 5 分钟恢复：呼吸、拉伸、一言。可持续，才叫坚持。</p>
+        <a class="f-link" href="#">体验恢复站</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 可信 ============ -->
+<section class="section trust" id="trust">
+  <div class="wrap trust-inner">
+    <div class="trust-copy reveal">
+      <span class="eyebrow"><span class="no">04</span> 为什么可信</span>
+      <h2 class="h-serif">每个判断，<br /><em>都能被还原成证据</em></h2>
+      <p>学迹的架构原则：规则管事实，模型管表达。掌握度、排程、预测全部由可复算规则完成，大模型只负责把话说清楚 —— 输出先经七层校验，修复失败即规则兜底，并如实标注。</p>
+      <ul class="trust-list">
+        <li><b>SNAPSHOT</b>每次 AI 判断引用带版本号的状态快照，输入可完整还原</li>
+        <li><b>WHY</b>每条建议附反事实解释：完成它的期望增益与每分钟收益</li>
+        <li><b>GUARD</b>生成—校验—修复自愈环，结构合法率 ≥ 99%</li>
+        <li><b>PRIVACY</b>摄像头端侧处理、心理数据隔离、AI 内容显式标识</li>
+      </ul>
+    </div>
+    <div class="evidence-card reveal">
+      <div class="ec-head"><b>证据链 · 今日任务 #2841</b><span>已验证 ✓</span></div>
+      <div class="ev-row"><span>状态快照</span><b>lsv_20261114_0830</b></div>
+      <div class="ev-row"><span>规则内核</span><b>scheduler/v2.3 · ρ=0.42/min</b></div>
+      <div class="ev-row"><span>提示词</span><b>P02@v14 · plan-builder</b></div>
+      <div class="ev-row"><span>模型路由</span><b>通用档 · MaaS 主通道</b></div>
+      <div class="ev-row"><span>校验结果</span><b class="ok">7/7 通过</b></div>
+      <div class="ev-row"><span>修复 / 兜底</span><b class="fix">未触发</b></div>
+      <div class="ev-row"><span>反事实 Why</span><b>期望增益 +2.4 分 · 排名 #1</b></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 底部 CTA ============ -->
+<section class="section final-cta" id="pricing">
+  <div class="wrap">
+    <div class="reveal">
+      <span class="eyebrow"><span class="no">05</span> 开始使用</span>
+      <h2>下一次计划失效之前<br />先让计划 <em>学会自己调整</em></h2>
+      <p>免费创建目标，3 分钟生成第一份自适应计划。升级方案随时可退，数据随时可导出。</p>
+      <div class="hero-actions">
+        <a class="btn btn-blue" href="#">免费开始</a>
+        <a class="btn btn-ghost" href="#" style="border-color:rgba(255,255,255,.3);color:#dce6f5">预约团队演示</a>
+      </div>
+      <p class="hero-note">个人版永久免费 · 班级版支持邀请码协作 · 教育机构方案联系我们</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Footer ============ -->
+<footer class="footer">
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <div class="brand"><span class="brand-mark" style="width:32px;height:32px;font-size:15px;">迹</span><span class="brand-name">学迹</span></div>
+        <p class="f-desc">以学习状态数据为核心的自适应 AI 学习教练。看得见、算得准、说得清、靠得住。</p>
+      </div>
+      <div>
+        <h4>产品</h4>
+        <ul><li><a href="#">今日驾驶舱</a></li><li><a href="#">计划编排</a></li><li><a href="#">错题诊断</a></li><li><a href="#">班级协作</a></li></ul>
+      </div>
+      <div>
+        <h4>资源</h4>
+        <ul><li><a href="#">算法白皮书</a></li><li><a href="#">提示词工程</a></li><li><a href="#">更新日志</a></li><li><a href="#">帮助中心</a></li></ul>
+      </div>
+      <div>
+        <h4>公司</h4>
+        <ul><li><a href="#">关于我们</a></li><li><a href="#">隐私与合规</a></li><li><a href="#">服务条款</a></li><li><a href="#">联系我们</a></li></ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 学迹 XUEJI · 让计划跟着状态生长</span>
+      <span>AI 生成内容均已标识 · 非诊断产品</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+// 导航滚动状态
+const nav = document.getElementById('nav');
+addEventListener('scroll', () => {
+  nav.classList.toggle('scrolled', scrollY > 12);
+}, { passive: true });
+
+// 滚动渐入
+const io = new IntersectionObserver((entries) => {
+  for (const e of entries) {
+    if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); }
+  }
+}, { threshold: 0.12 });
+document.querySelectorAll('.reveal').forEach((el, i) => {
+  el.style.transitionDelay = (i % 3) * 90 + 'ms';
+  io.observe(el);
+});
+</script>
+</body>
+</html>

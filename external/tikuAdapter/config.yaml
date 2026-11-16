@@ -1,0 +1,11 @@
+limit:
+  enable: false
+  duration: 3
+  requests: 1
+mysql: ""
+database:
+  path: "data/tiku.db"
+api: []
+elasticsearch:
+  url: http://127.0.0.1:9200
+recordEmptyAnswer: false

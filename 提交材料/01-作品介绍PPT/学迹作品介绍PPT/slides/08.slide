@@ -1,0 +1,32 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521' }}>
+    <Box style={{ gap: 8 }}>
+        <Text style={{ fontSize: 14, color: '#8FBCE4', letterSpacing: 2 }}>02 · 核心创新</Text>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>AI 决策增强：从「给答案」到「定位错在哪一步」</Text>
+        <Box style={{ width: '100%', height: 1, background: '#3A5A78', marginTop: 6 }} />
+    </Box>
+    <Box style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20, marginTop: 30, flex: 1 }}>
+        <Box style={{ background: '#232C37', borderRadius: 8, padding: 26, width: 570, height: 180 }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 10 }}>AI 主动探针出题官</Text>
+            <Text style={{ fontSize: 18, color: '#E7E8E9', lineHeight: 1.5 }}>不等学生提问，按掌握度与错题主动选题，用探针、迁移、挑战三类模式挖掘隐藏盲区</Text>
+        </Box>
+        <Box style={{ background: '#232C37', borderRadius: 8, padding: 26, width: 570, height: 180 }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 10 }}>思维路径回放器</Text>
+            <Text style={{ fontSize: 18, color: '#E7E8E9', lineHeight: 1.5 }}>把每道错题拆成 3–5 个思维步骤，标出错误发生在哪一步、因什么而错</Text>
+        </Box>
+        <Box style={{ background: '#232C37', borderRadius: 8, padding: 26, width: 570, height: 180 }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 10 }}>知识迁移压力测试</Text>
+            <Text style={{ fontSize: 18, color: '#E7E8E9', lineHeight: 1.5 }}>换情境、换问法生成迁移题，判断学生是记住了结论还是真正理解并能应用</Text>
+        </Box>
+        <Box style={{ background: '#232C37', borderRadius: 8, padding: 26, width: 570, height: 180 }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 10 }}>多智能体学习评审团</Text>
+            <Text style={{ fontSize: 18, color: '#E7E8E9', lineHeight: 1.5 }}>计划官、诊断官、风险官、教练四个角色分别审查学习方案，再汇总裁决意见</Text>
+        </Box>
+    </Box>
+    <Box style={{ background: '#63A7D4', borderRadius: 8, padding: '16px 28px', marginTop: 24 }}>
+        <Text style={{ fontSize: 19, color: '#FFFFFF' }}><span style={{ fontWeight: 'bold' }}>学习证据链：</span>每个 AI 判断都保留数据快照、触发规则与模型来源，逐条可追溯——AI 不做黑箱决定</Text>
+    </Box>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 18 }}>
+        <Text style={{ fontSize: 14, color: '#C9CCCE' }}>学迹 · 自适应 AI 学习教练</Text>
+        <Text style={{ fontSize: 14, color: '#C9CCCE' }}>08 / 15</Text>
+    </Box>
+</Slide>

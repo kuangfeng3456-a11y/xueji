@@ -1,0 +1,28 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521' }}>
+    <Box style={{ gap: 6, marginBottom: 44 }}>
+        <Text style={{ fontSize: 44, fontWeight: 'bold', color: '#FFFFFF' }}>目录</Text>
+        <Text style={{ fontSize: 16, color: '#8FBCE4', letterSpacing: 4 }}>CONTENTS</Text>
+    </Box>
+    <Box style={{ gap: 0, flex: 1 }}>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 32, padding: '26px 0px', borderBottom: '1px solid #2A3542' }}>
+            <Text style={{ fontFamily: "'Barlow Condensed','思源黑体',sans-serif", fontSize: 40, fontWeight: 'bold', color: '#63A7D4', width: 80 }}>01</Text>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', flex: 1 }}>背景与方案</Text>
+            <Text style={{ fontSize: 16, color: '#C9CCCE' }}>P03 - P05</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 32, padding: '26px 0px', borderBottom: '1px solid #2A3542' }}>
+            <Text style={{ fontFamily: "'Barlow Condensed','思源黑体',sans-serif", fontSize: 40, fontWeight: 'bold', color: '#63A7D4', width: 80 }}>02</Text>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', flex: 1 }}>核心创新</Text>
+            <Text style={{ fontSize: 16, color: '#C9CCCE' }}>P06 - P08</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 32, padding: '26px 0px', borderBottom: '1px solid #2A3542' }}>
+            <Text style={{ fontFamily: "'Barlow Condensed','思源黑体',sans-serif", fontSize: 40, fontWeight: 'bold', color: '#63A7D4', width: 80 }}>03</Text>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', flex: 1 }}>技术实现</Text>
+            <Text style={{ fontSize: 16, color: '#C9CCCE' }}>P09 - P11</Text>
+        </Box>
+        <Box style={{ flexDirection: 'row', alignItems: 'center', gap: 32, padding: '26px 0px' }}>
+            <Text style={{ fontFamily: "'Barlow Condensed','思源黑体',sans-serif", fontSize: 40, fontWeight: 'bold', color: '#63A7D4', width: 80 }}>04</Text>
+            <Text style={{ fontSize: 24, fontWeight: 'bold', color: '#FFFFFF', flex: 1 }}>华为云与落地</Text>
+            <Text style={{ fontSize: 16, color: '#C9CCCE' }}>P12 - P14</Text>
+        </Box>
+    </Box>
+</Slide>

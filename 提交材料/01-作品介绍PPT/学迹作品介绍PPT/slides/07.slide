@@ -1,0 +1,42 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521' }}>
+    <Box style={{ gap: 8 }}>
+        <Text style={{ fontSize: 14, color: '#8FBCE4', letterSpacing: 2 }}>02 · 核心创新</Text>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>五项决策级创新：把「接下来怎么办」变成可计算的问题</Text>
+        <Box style={{ width: '100%', height: 1, background: '#3A5A78', marginTop: 6 }} />
+    </Box>
+    <Box style={{ flexDirection: 'row', gap: 28, marginTop: 28, flex: 1, alignItems: 'stretch' }}>
+        <Box style={{ background: '#63A7D4', borderRadius: 8, padding: 28, width: 350, justifyContent: 'space-between' }}>
+            <Box style={{ gap: 14 }}>
+                <Text style={{ fontSize: 30, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.3 }}>决策级创新</Text>
+                <Text style={{ fontSize: 18, color: '#FFFFFF', lineHeight: 1.55 }}>竞品回答「今天学什么」，学迹进一步回答「现在稳不稳、漏洞在哪、哪种方法适合我」</Text>
+            </Box>
+            <Text style={{ fontSize: 15, color: '#E3F1F8', lineHeight: 1.5 }}>每项创新都有明确公式与触发条件，答辩可逐条复算</Text>
+        </Box>
+        <Box style={{ flex: 1, gap: 0 }}>
+            <Box style={{ padding: '16px 0px', borderBottom: '1px solid #2A3542', gap: 6 }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}><span style={{ color: '#63A7D4' }}>01</span>  学习驾驶舱</Text>
+                <Text style={{ fontSize: 17, color: '#C9CCCE', lineHeight: 1.45 }}>准备度评分综合知识覆盖、时间负荷与风险扣分，一屏回答「现在到底稳不稳」</Text>
+            </Box>
+            <Box style={{ padding: '16px 0px', borderBottom: '1px solid #2A3542', gap: 6 }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}><span style={{ color: '#63A7D4' }}>02</span>  知识漏洞地图</Text>
+                <Text style={{ fontSize: 17, color: '#C9CCCE', lineHeight: 1.45 }}>沿先修依赖从错题向上追溯候选漏洞，先用验证题确认，再生成修复任务</Text>
+            </Box>
+            <Box style={{ padding: '16px 0px', borderBottom: '1px solid #2A3542', gap: 6 }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}><span style={{ color: '#63A7D4' }}>03</span>  未来模拟实验室</Text>
+                <Text style={{ fontSize: 17, color: '#C9CCCE', lineHeight: 1.45 }}>四种策略方案同时比较，展示结果区间、每日负荷与不确定性，不做单点成绩承诺</Text>
+            </Box>
+            <Box style={{ padding: '16px 0px', borderBottom: '1px solid #2A3542', gap: 6 }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}><span style={{ color: '#63A7D4' }}>04</span>  风险救援中心</Text>
+                <Text style={{ fontSize: 17, color: '#C9CCCE', lineHeight: 1.45 }}>知识、时间、执行、记忆、策略五类风险各给触发原因与建议动作，确认后才改计划</Text>
+            </Box>
+            <Box style={{ padding: '16px 0px', gap: 6 }}>
+                <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#FFFFFF' }}><span style={{ color: '#63A7D4' }}>05</span>  策略实验室</Text>
+                <Text style={{ fontSize: 17, color: '#C9CCCE', lineHeight: 1.45 }}>用 3 天小实验比较精读、刷题、闪卡与 AI 讲解的个人收益，把「哪种方法适合我」变成数据</Text>
+            </Box>
+        </Box>
+    </Box>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 18 }}>
+        <Text style={{ fontSize: 14, color: '#C9CCCE' }}>学迹 · 自适应 AI 学习教练</Text>
+        <Text style={{ fontSize: 14, color: '#C9CCCE' }}>07 / 15</Text>
+    </Box>
+</Slide>

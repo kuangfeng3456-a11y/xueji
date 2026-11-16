@@ -1,0 +1,61 @@
+# 构建镜像时排除的内容
+# 关键：凭据文件与本地数据绝不进入镜像层
+
+# --- 凭据与本地配置（最高优先级，绝不能打进镜像）---
+.env
+.env.*
+*.env
+!.env.example
+backend/.env
+backend/.env.cloud
+**/*.pem
+**/*.key
+**/credentials
+
+# --- Python ---
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+backend/coverage_report.txt
+venv/
+.venv/
+
+# --- Node / 前端 ---
+node_modules/
+frontend/node_modules/
+npm-debug.log*
+
+# --- 运行时数据（应由卷挂载，不能烘进镜像）---
+data/
+backend/data/
+uploads/
+backend/uploads/
+logs/
+*.db
+*.sqlite3
+*.log
+
+# --- 工具与IDE痕迹 ---
+.git/
+.gitignore
+.codeartsdoer/
+.idea/
+.vscode/
+*.md
+!README.md
+docs/
+tests/
+backend/tests/
+scripts/
+_sdk_test/
+_*.txt
+Dockerfile
+docker-compose.yml
+.dockerignore
+start.bat
+start.sh

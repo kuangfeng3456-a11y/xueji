@@ -1,0 +1,17 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521', position: 'relative', justifyContent: 'space-between' }}>
+    <Box style={{ position: 'absolute', right: 40, bottom: 30, opacity: 0.1 }}>
+        <Text style={{ fontFamily: "'Barlow Condensed','思源黑体',sans-serif", fontSize: 190, fontWeight: 'bold', color: '#63A7D4', lineHeight: 1 }}>XUEJI</Text>
+    </Box>
+    <Box style={{ zIndex: 1 }}>
+        <Text style={{ fontSize: 15, color: '#8FBCE4', letterSpacing: 2 }}>第十一届华为 ICT 大赛 · 创新赛 · 赛题一 · 基于华为云产品打造 AI 创新应用</Text>
+    </Box>
+    <Box style={{ gap: 22, zIndex: 1 }}>
+        <Text style={{ fontSize: 96, fontWeight: 'bold', color: '#FFFFFF', lineHeight: 1.15 }}>学迹</Text>
+        <Text style={{ fontSize: 38, fontWeight: 'bold', color: '#63A7D4', lineHeight: 1.2 }}>自适应 AI 学习教练</Text>
+        <Text style={{ fontSize: 20, color: '#E7E8E9', lineHeight: 1.55 }}>用规则管事实、用模型管表达 —— 为每一次备考生成、执行并动态调整学习计划</Text>
+    </Box>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', zIndex: 1 }}>
+        <Text style={{ fontSize: 16, color: '#C9CCCE' }}>学迹团队 · 2026 年 11 月</Text>
+        <Text style={{ fontSize: 16, color: '#8FBCE4' }}>作品介绍 · 答辩材料</Text>
+    </Box>
+</Slide>

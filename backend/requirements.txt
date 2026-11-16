@@ -1,0 +1,41 @@
+fastapi==0.104.1
+uvicorn[standard]==0.24.0
+SQLAlchemy==2.0.23
+pydantic==2.5.0
+python-multipart==0.0.20
+python-jose[cryptography]==3.3.0
+redis==5.0.1
+httpx==0.28.1
+pypdf==3.17.4
+python-docx==1.1.2
+PyMySQL==1.1.0
+cryptography==41.0.7
+pytest==6.2.4
+
+# ---------------------------------------------------------------------------
+# 华为云接入能力：可选依赖（默认不安装）
+#
+# 本项目遵循「缺 SDK 不崩」原则 —— services/cloud_services.py 与
+# services/huawei_cloud.py 对每个云产品都做了延迟 import + ImportError 保护，
+# 未安装时返回 status="sdk_missing"，功能自动由本地/浏览器能力降级承接。
+# 因此下面这些包**不写进强制依赖**，离线环境与 CI 安装本文件不会失败。
+#
+# 需要真实调用云端时按需安装：
+#   pip install huaweicloudsdkcore huaweicloudsdkrds huaweicloudsdkdcs
+#   pip install huaweicloudsdkocr        # 错题拍照文字识别（D3）
+#   pip install huaweicloudsdksis        # 语音合成/识别（D3）
+#   pip install esdk-obs-python          # 见证缩略图对象存储与生命周期（D4）
+#   pip install huaweicloudsdkdew        # 凭据托管读取（D4 / DEW-CSMS）
+#
+# 版本下限与 services/cloud_services.py 的 OPTIONAL_PACKAGES 保持一致：
+#   huaweicloudsdkocr>=3.1.200
+#   huaweicloudsdksis>=3.1.200
+#   esdk-obs-python>=3.24.0
+#   huaweicloudsdkdew>=3.1.200
+#   huaweicloudsdkcore>=3.1.200
+#   huaweicloudsdkrds>=3.1.200
+#   huaweicloudsdkdcs>=3.1.200
+#
+# 诚实说明：以上云端调用路径均**未在真实华为云环境验证过**（开发机无 AK/SK，
+# 且 OCR/SIS/OBS/DEW 服务未开通）。已验证的只有无配置 / 无 SDK 时的降级分支。
+# ---------------------------------------------------------------------------

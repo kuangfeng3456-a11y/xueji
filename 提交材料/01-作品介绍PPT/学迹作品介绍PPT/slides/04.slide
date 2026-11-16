@@ -1,0 +1,32 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521' }}>
+    <Box style={{ gap: 8 }}>
+        <Text style={{ fontSize: 14, color: '#8FBCE4', letterSpacing: 2 }}>01 · 背景与方案</Text>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>备考路上反复出现的四个真问题</Text>
+        <Box style={{ width: '100%', height: 1, background: '#3A5A78', marginTop: 6 }} />
+    </Box>
+    <Box style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 20, marginTop: 30, flex: 1 }}>
+        <Box style={{ background: '#232C37', borderRadius: 8, padding: 26, width: 570, height: 175 }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 10 }}>有资料，没计划</Text>
+            <Text style={{ fontSize: 18, color: '#E7E8E9', lineHeight: 1.5 }}>收藏了一堆真题和讲义，却不知道每天该学什么、学多少、先学哪个</Text>
+        </Box>
+        <Box style={{ background: '#232C37', borderRadius: 8, padding: 26, width: 570, height: 175 }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 10 }}>计划一次生成，落后即作废</Text>
+            <Text style={{ fontSize: 18, color: '#E7E8E9', lineHeight: 1.5 }}>一次性排出来的日历计划，只要落后一天就全盘作废，坚持不下去</Text>
+        </Box>
+        <Box style={{ background: '#232C37', borderRadius: 8, padding: 26, width: 570, height: 175 }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 10 }}>错题只记答案，不复盘</Text>
+            <Text style={{ fontSize: 18, color: '#E7E8E9', lineHeight: 1.5 }}>只记录选了什么，不分析为什么错，同一个知识点反复丢分</Text>
+        </Box>
+        <Box style={{ background: '#232C37', borderRadius: 8, padding: 26, width: 570, height: 175 }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 10 }}>通用 AI 不了解你的学习状态</Text>
+            <Text style={{ fontSize: 18, color: '#E7E8E9', lineHeight: 1.5 }}>每次对话都要重新交代背景，给不出连续、可追责的指导</Text>
+        </Box>
+    </Box>
+    <Box style={{ background: '#63A7D4', borderRadius: 8, padding: '16px 28px', marginTop: 24 }}>
+        <Text style={{ fontSize: 19, color: '#FFFFFF' }}><span style={{ fontWeight: 'bold' }}>结论：</span>目标用户是有明确考试目标的大学生（四六级、考研、HCIA 等）——缺的不是资料，是一位跟着状态走、给出理由的教练</Text>
+    </Box>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 18 }}>
+        <Text style={{ fontSize: 14, color: '#C9CCCE' }}>学迹 · 自适应 AI 学习教练</Text>
+        <Text style={{ fontSize: 14, color: '#C9CCCE' }}>04 / 15</Text>
+    </Box>
+</Slide>

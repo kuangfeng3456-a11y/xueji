@@ -1,0 +1,60 @@
+<Slide style={{ width: 1280, height: 720, padding: 60, background: '#0B1521' }}>
+    <Box style={{ gap: 8 }}>
+        <Text style={{ fontSize: 14, color: '#8FBCE4', letterSpacing: 2 }}>03 · 技术实现</Text>
+        <Text style={{ fontSize: 34, fontWeight: 'bold', color: '#FFFFFF' }}>四层架构：每一层都可以独立降级</Text>
+        <Box style={{ width: '100%', height: 1, background: '#3A5A78', marginTop: 6 }} />
+    </Box>
+    <Box style={{ flexDirection: 'row', gap: 30, marginTop: 28, flex: 1, alignItems: 'stretch' }}>
+        <Box style={{ width: 690 }}>
+            <svg width={690} height={470} viewBox='0 0 690 470'>
+                <rect x='10' y='8' width='670' height='86' rx='8' fill='#24428F' />
+                <text x='40' y='46' fill='#FFFFFF' fontSize='19' fontWeight='bold' fontFamily='思源黑体'>浏览器层 · Vue3 SPA</text>
+                <text x='40' y='74' fill='#A9CFE7' fontSize='15' fontFamily='思源黑体'>35+ 个业务页面 · Hash 路由 · 后端同源托管</text>
+                <line x1='345' y1='94' x2='345' y2='122' stroke='#60676F' strokeWidth='2' />
+                <polygon points='339,118 351,118 345,128' fill='#60676F' />
+                <rect x='10' y='128' width='670' height='86' rx='8' fill='#3A5CBC' />
+                <text x='40' y='166' fill='#FFFFFF' fontSize='19' fontWeight='bold' fontFamily='思源黑体'>应用层 · FastAPI · 214 个 API 端点</text>
+                <text x='40' y='194' fill='#A9CFE7' fontSize='15' fontFamily='思源黑体'>四智能体 Planner / Diagnoser / Coach / Reporter · 19 条版本化提示词</text>
+                <line x1='345' y1='214' x2='345' y2='242' stroke='#60676F' strokeWidth='2' />
+                <polygon points='339,238 351,238 345,248' fill='#60676F' />
+                <rect x='10' y='248' width='670' height='86' rx='8' fill='#63A7D4' />
+                <text x='40' y='286' fill='#0F1920' fontSize='19' fontWeight='bold' fontFamily='思源黑体'>规则层 · rules.py 纯函数（零数据库依赖）</text>
+                <text x='40' y='314' fill='#0F1920' fontSize='15' fontFamily='思源黑体'>掌握度更新 · 复习间隔 · 任务优先级 · 收益密度排程 · 周报统计</text>
+                <line x1='345' y1='334' x2='345' y2='362' stroke='#60676F' strokeWidth='2' />
+                <polygon points='339,358 351,358 345,368' fill='#60676F' />
+                <rect x='10' y='368' width='214' height='86' rx='8' fill='#232C37' stroke='#60676F' strokeWidth='1' />
+                <text x='30' y='406' fill='#FFFFFF' fontSize='17' fontWeight='bold' fontFamily='思源黑体'>RDS MySQL</text>
+                <text x='30' y='434' fill='#C9CCCE' fontSize='14' fontFamily='思源黑体'>SQLite 自动降级</text>
+                <rect x='238' y='368' width='214' height='86' rx='8' fill='#232C37' stroke='#60676F' strokeWidth='1' />
+                <text x='258' y='406' fill='#FFFFFF' fontSize='17' fontWeight='bold' fontFamily='思源黑体'>DCS Redis</text>
+                <text x='258' y='434' fill='#C9CCCE' fontSize='14' fontFamily='思源黑体'>内存缓存自动降级</text>
+                <rect x='466' y='368' width='214' height='86' rx='8' fill='#232C37' stroke='#60676F' strokeWidth='1' />
+                <text x='486' y='406' fill='#FFFFFF' fontSize='17' fontWeight='bold' fontFamily='思源黑体'>OBS 对象存储</text>
+                <text x='486' y='434' fill='#C9CCCE' fontSize='14' fontFamily='思源黑体'>资料与错题图片</text>
+            </svg>
+        </Box>
+        <Box style={{ flex: 1, gap: 0, paddingTop: 8 }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', color: '#FFFFFF', marginBottom: 20 }}>架构亮点</Text>
+            <Box style={{ padding: '14px 0px', borderBottom: '1px solid #2A3542', gap: 6 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#63A7D4' }}>模型可降级</Text>
+                <Text style={{ fontSize: 16, color: '#C9CCCE', lineHeight: 1.45 }}>LLM 全链路规则兜底：模型不可用时演示不中断，语义缓存 + 熔断保护</Text>
+            </Box>
+            <Box style={{ padding: '14px 0px', borderBottom: '1px solid #2A3542', gap: 6 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#63A7D4' }}>规则可单测</Text>
+                <Text style={{ fontSize: 16, color: '#C9CCCE', lineHeight: 1.45 }}>规则层为纯函数，不依赖数据库，可独立单元测试与复算</Text>
+            </Box>
+            <Box style={{ padding: '14px 0px', borderBottom: '1px solid #2A3542', gap: 6 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#63A7D4' }}>存储双后端</Text>
+                <Text style={{ fontSize: 16, color: '#C9CCCE', lineHeight: 1.45 }}>MySQL 与 SQLite、Redis 与内存缓存自动切换，本地零配置可跑</Text>
+            </Box>
+            <Box style={{ padding: '14px 0px', gap: 6 }}>
+                <Text style={{ fontSize: 18, fontWeight: 'bold', color: '#63A7D4' }}>工程化部署</Text>
+                <Text style={{ fontSize: 16, color: '#C9CCCE', lineHeight: 1.45 }}>Dockerfile 多阶段构建 + docker-compose 一键起 MySQL / Redis / 应用</Text>
+            </Box>
+        </Box>
+    </Box>
+    <Box style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 16 }}>
+        <Text style={{ fontSize: 14, color: '#C9CCCE' }}>学迹 · 自适应 AI 学习教练</Text>
+        <Text style={{ fontSize: 14, color: '#C9CCCE' }}>10 / 15</Text>
+    </Box>
+</Slide>
