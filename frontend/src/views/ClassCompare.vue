@@ -93,6 +93,7 @@ onMounted(load)
               <th>弱项</th>
               <th>需关注</th>
               <th>数据</th>
+              <th>布置完成</th>
             </tr>
           </thead>
           <tbody>
@@ -104,6 +105,7 @@ onMounted(load)
               <td>{{ item.top_weak || '暂无' }}</td>
               <td>{{ item.watch_count }}</td>
               <td>{{ item.basis === 'sample' ? '样例对照' : '学习记录' }}</td>
+              <td>{{ item.assignment_title ? item.assignment_title + ' ' + Math.round((item.assignment_completion || 0) * 100) + '%' : '—' }}</td>
             </tr>
           </tbody>
         </table>

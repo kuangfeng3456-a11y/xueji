@@ -60,6 +60,7 @@ const ladder = ['听懂', '跟读', '遮词', '复述', '复习']
 const ladderIndex = ref(0)
 const revealed = ref([])
 const closingNote = ref(null)
+const pathHint = ref('')
 const shadowHeard = ref('')
 const shadowResult = ref(null)
 const shadowListening = ref(false)
@@ -623,6 +624,14 @@ onMounted(() => {
     question.value = String(route.query.q)
   }
   loadHistory()
+  if (store.currentGoalId) {
+    api.dashboard(store.currentGoalId).then((board) => {
+      pathHint.value = board?.next_step || ''
+      if (!question.value && board?.today_digest?.still_weak?.length) {
+        question.value = `我在「${board.today_digest.still_weak[0]}」上还不稳，下一步该怎么练？`
+      }
+    }).catch(() => {})
+  }
   cloudSpeechReady(api).then((ready) => {
     inputChannel.value = ready ? '可使用云端语音识别' : '云端语音识别未开通，将使用本机或文字'
     outputChannel.value = ready ? '朗读优先使用云端语音' : '云端语音合成未开通，将使用本机朗读'
@@ -660,6 +669,7 @@ onBeforeUnmount(() => {
       <div v-for="(line, index) in closingNote.takeaways" :key="index">{{ line }}</div>
       <div>{{ closingNote.next_practice }}</div>
     </div>
+    <p v-if="mode === 'chat' && pathHint" class="wx-note">今天的下一步：{{ pathHint }}</p>
     <p v-if="mode === 'chat'" class="wx-note">会记住这次对话里的追问。{{ inputChannel }}。{{ outputChannel }}。</p>
     <div v-if="mode === 'chat'" class="row" style="gap: 8px; padding: 0 12px 8px; flex-wrap: wrap">
       <button type="button" class="btn btn-ghost btn-sm" @click="startNewSession">新的对话</button>

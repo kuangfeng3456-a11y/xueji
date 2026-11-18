@@ -147,6 +147,10 @@ async def create_mistake(
         "replan": None,
     }
 
+    if point:
+        from ..services.practice_loop import steer_today
+
+        steer_today(db, user, goal, point, f"这道错题落在「{point.name}」，今天先补这一处。")
     if auto_replan:
         replan_result = replan(db, user.id, goal, trigger="mistake")
         result["replan"] = {

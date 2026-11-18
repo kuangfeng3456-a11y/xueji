@@ -399,6 +399,7 @@ class DashboardOut(BaseModel):
     loop_steps: List["LoopStepOut"] = []
     week_activity: List["WeekMarkOut"] = []
     next_step: str = ""
+    today_digest: Optional["TodayDigestOut"] = None
     assignments: List["AssignmentBrief"] = []
     server_date: date
 
@@ -420,6 +421,12 @@ class AssignmentBrief(BaseModel):
     title: str
     package_name: str
     hint: str = ""
+
+
+class TodayDigestOut(BaseModel):
+    practiced: List[str] = []
+    still_weak: List[str] = []
+    next_practice: str = ""
 
 
 DashboardOut.model_rebuild()

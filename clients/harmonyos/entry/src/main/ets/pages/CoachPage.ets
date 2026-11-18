@@ -44,6 +44,20 @@ struct CoachPage {
       router.replaceUrl({ url: 'pages/LoginPage' });
       return;
     }
+    if (this.client.goalId.length > 0) {
+      try {
+        const boardText = await this.client.request(
+          http.RequestMethod.GET,
+          '/dashboard?goal_id=' + this.client.goalId
+        );
+        const step = readField(JSON.parse(boardText) as ESObject, 'next_step');
+        if (step.length > 0) {
+          this.note = step;
+        }
+      } catch (boardErr) {
+        this.note = (boardErr as Error).message;
+      }
+    }
     try {
       const listed = JSON.parse(await this.client.request(http.RequestMethod.GET, '/coach/sessions')) as ESObject;
       const items = listed['items'] as Array<ESObject>;

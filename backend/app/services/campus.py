@@ -255,7 +255,17 @@ def compare_classes(db: Session, user: User, class_ids: List[int]) -> dict:
         school_class = db.get(SchoolClass, class_id)
         if school_class is None or school_class.owner_id != user.id:
             raise ValueError("只能对比自己负责的班级")
-        rows.append(_class_metrics(db, school_class))
+        metrics = _class_metrics(db, school_class)
+        from .practice_loop import list_assignments
+
+        assigned = list_assignments(db, school_class)
+        if assigned:
+            metrics["assignment_title"] = assigned[0]["title"]
+            metrics["assignment_completion"] = round(
+                sum(item["completion_rate"] for item in assigned) / len(assigned), 3
+            )
+            metrics["assignment_finished"] = sum(item["finished"] for item in assigned)
+        rows.append(metrics)
     ranked = sorted(rows, key=lambda item: item["completion_rate"])
     return {
         "items": rows,

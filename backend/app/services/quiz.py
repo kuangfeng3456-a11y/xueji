@@ -1156,6 +1156,17 @@ def grade_quiz(
     if wrong:
         result = replan(db, user.id, goal, trigger="quiz")
         changes = result["changes"]
+        from .practice_loop import steer_today
+
+        seen = set()
+        for item in wrong:
+            kp_id = item.get("kp_id")
+            if not kp_id or kp_id in seen:
+                continue
+            seen.add(kp_id)
+            point = db.get(KnowledgePoint, kp_id)
+            if point:
+                steer_today(db, user, goal, point, f"随堂测答错了「{point.name}」，今天先补这一处。")
     cache.delete(key)
 
     total = len(questions)

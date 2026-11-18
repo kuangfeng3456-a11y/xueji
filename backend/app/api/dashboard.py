@@ -24,13 +24,14 @@ from ..schemas import (
     MistakeOut,
     ReplanChange,
     RhythmOut,
+    TodayDigestOut,
     UserOut,
     WeekMarkOut,
     DailyReviewIn,
 )
 from ..services.auto_schedule import auto_adjust_today
 from ..services.planner import task_to_dict
-from ..services.practice_loop import loop_status
+from ..services.practice_loop import ensure_assignment_tasks, loop_status
 from ..services.rhythm import build_rhythm
 from ..services.rules import calc_streak, days_left
 from .goals import build_goal_out
@@ -111,6 +112,7 @@ def _loop_fields(status: dict) -> dict:
         "loop_steps": [LoopStepOut(**item) for item in status.get("loop_steps") or []],
         "week_activity": [WeekMarkOut(**item) for item in status.get("week_activity") or []],
         "next_step": status.get("next_step") or "",
+        "today_digest": TodayDigestOut(**status["today_digest"]) if status.get("today_digest") else None,
         "assignments": [AssignmentBrief(**item) for item in status.get("assignments") or []],
     }
 
@@ -164,6 +166,7 @@ async def dashboard(
             server_date=today,
         )
 
+    ensure_assignment_tasks(db, user, goal, today)
     # 剩余时间不足、任务逾期或今天为空时，系统自动调整，用户无需手动点重排
     try:
         auto_adjust = AutoAdjustOut(**auto_adjust_today(db, user, goal, today))
