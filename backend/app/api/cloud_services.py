@@ -17,6 +17,7 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile
 from ..deps import get_current_user
 from ..models import User
 from ..services import cloud_services as cs
+from ..services.question_ocr import extract_question_image
 
 router = APIRouter(prefix="/cloud", tags=["华为云能力"])
 
@@ -47,7 +48,7 @@ async def ocr_extract(
             "detail": f"图片超过 {_MAX_IMAGE_BYTES // 1024 // 1024}MB 上限，未调用云服务",
             "text": "",
         }
-    result = cs.ocr_extract_text(raw, kind=kind)
+    result = extract_question_image(raw, kind=kind)
     result["filename"] = (file.filename or "")[:80]
     return result
 

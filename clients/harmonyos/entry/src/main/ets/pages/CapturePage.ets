@@ -42,7 +42,9 @@ struct CapturePage {
       const recognized = readField(data, 'text');
       if (status === 'ok' && recognized.length > 0) {
         this.question = recognized;
-        this.note = '已识别题干，请核对后保存。';
+        const detection = data['detection'] as ESObject;
+        const regions = detection ? detection['regions'] as Array<ESObject> : [];
+        this.note = regions && regions.length > 0 ? '已按题目区域识别，请核对后保存。' : '已识别题干，请核对后保存。';
       } else if (status === 'not_configured' || status === 'sdk_missing' || status === 'not_subscribed') {
         this.note = '文字识别未开通，请手动填写题干。照片仍可在核对后保存为错题。';
       } else {

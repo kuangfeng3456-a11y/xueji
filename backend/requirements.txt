@@ -39,4 +39,8 @@ pytest==6.2.4
 #
 # 诚实说明：以上云端调用路径均**未在真实华为云环境验证过**（开发机无 AK/SK，
 # 且 OCR/SIS/OBS/DEW 服务未开通）。已验证的只有无配置 / 无 SDK 时的降级分支。
+#
+# 拍题区域检测（可选，CPU，不随 CI 安装）。不要安装 Ultralytics（AGPL）。
+#   pip install "onnxruntime>=1.16.0" "Pillow>=10.0.0"
+# 权重放到 backend/models/question-detect.onnx，说明见 docs/question-detect.md。
 # ---------------------------------------------------------------------------

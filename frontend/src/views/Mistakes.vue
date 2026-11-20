@@ -162,7 +162,8 @@ async function uploadPhoto(event) {
       const ocr = await api.ocrExtract(ocrForm)
       if (ocr && ocr.status === 'ok' && (ocr.text || '').trim()) {
         form.question = ocr.text.trim().slice(0, 2000)
-        notify('已识别题干，请核对后提交')
+        const regions = ocr.detection?.regions || []
+        notify(regions.length ? '已按题目区域识别，请核对后提交' : '已识别题干，请核对后提交')
       } else if (ocr && (ocr.status === 'not_configured' || ocr.status === 'sdk_missing' || ocr.status === 'not_subscribed')) {
         notify('文字识别未开通，请手动填写题干')
       } else {

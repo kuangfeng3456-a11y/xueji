@@ -57,7 +57,7 @@
 | 认知负荷调节器 | 结合疲劳、任务量与错题率计算负荷，自动降载或加难 |
 | 反脆弱挑战模式 | 用陌生条件训练应对能力，答错不扣掌握度，记录韧性值 |
 | 学习证据链 | 每个 AI 判断记录输入、规则、输出与模型来源，可逐条展开追溯 |
-| 拍题与语音 | 错题可拍照或从相册上传，调用 `POST /api/cloud/ocr/extract`。语音输入走 `POST /api/cloud/sis/recognize`，播报走 `POST /api/cloud/sis/synthesize`。未配置华为云凭证、缺少 SDK 或调用失败时返回 `not_configured` / `sdk_missing` / `error`，文本为空，并说明改用手动填写、本机听写或本机朗读。不会把失败说成识别成功 |
+| 拍题与语音 | 拍照或从相册上传后，若本机放了题目检测权重，会先框出题干、选项或手写区域，再对裁切图调用已有 OCR；没有权重、运行时或推理失败时改为整页 OCR，响应里的 `detection.status` 为 `model_missing` / `runtime_missing` / `error`。文字识别本身仍是华为云 OCR：未配置时 `status` 为 `not_configured` / `sdk_missing` / `error`，文本为空。语音输入走 `POST /api/cloud/sis/recognize`，播报走 `POST /api/cloud/sis/synthesize`，失败时改用本机听写或本机朗读。获取权重与许可见 [docs/question-detect.md](docs/question-detect.md) |
 | 多轮语音教练 | `POST /api/coach/sessions` 保存会话和历史。追问会接上一条问题。语音页带上今天的下一步；已有弱项时，开场问题对着那个知识点。`POST /api/coach/sessions/{id}/close` 给出不超过 3 条要点，并把提到的知识点排进今日补练 |
 | 口语练习阶梯 | 同一句内容按听懂、跟读、遮词、复述、复习推进。跟读仍有词级高亮。遮住的词可以点开。复述进入教练。难点可放入今日闪卡，复习间隔仍是 1/2/4/7/15 天 |
 | 今日路径 | 看课、随堂测、口语与追问、复盘四步写入 `loop_steps`。完成对应记录后该步变为已完成，`next_step` 改为下一项。答错学生和未暴露弱项的学生，今日任务和下一步不同 |
