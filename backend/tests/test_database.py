@@ -75,7 +75,7 @@ def test_create_engine_rds_uses_pool_and_ssl_options(monkeypatch):
     factory.assert_called_once()
     _, kwargs = factory.call_args
     assert kwargs["connect_args"] == {
-        "connect_timeout": 3,
+        "connect_timeout": 10,
         "ssl": {"ca": "/etc/rds-ca.pem"},
     }
     assert kwargs["pool_pre_ping"] is True
@@ -92,7 +92,7 @@ def test_create_engine_rds_without_ssl(monkeypatch):
         database_module._create_engine("mysql+pymysql://user:pwd@rds-host:3306/xueji")
 
     _, kwargs = factory.call_args
-    assert kwargs["connect_args"] == {"connect_timeout": 3}
+    assert kwargs["connect_args"] == {"connect_timeout": 10}
 
 
 # ---------------------------------------------------------------- 探活

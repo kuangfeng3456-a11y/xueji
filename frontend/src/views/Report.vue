@@ -7,6 +7,7 @@ import DetailModal from '../components/DetailModal.vue'
 const reports = ref([])
 const selected = ref(null)
 const loading = ref(true)
+const digest = ref(null)
 const generating = ref(false)
 const detail = ref(null)
 const consent = ref(null)
@@ -45,6 +46,8 @@ async function load() {
   try {
     reports.value = await api.reports(store.currentGoalId)
     selected.value = reports.value[0] || null
+    const board = await api.dashboard(store.currentGoalId).catch(() => null)
+    digest.value = board?.today_digest || null
     await loadConsent()
   } catch (e) {
     notify(e.message, true)
@@ -179,6 +182,13 @@ watch(() => store.currentGoalId, load, { immediate: true })
             {{ avgDelta > 0 ? '+' : '' }}{{ avgDelta }}pp
           </div>
         </div>
+      </div>
+
+      <div v-if="digest" class="card">
+        <div class="card-title">今天练完之后</div>
+        <p class="small" style="margin-top: 8px">已完成：{{ digest.practiced.length ? digest.practiced.join('、') : '今天还没有完成的任务' }}</p>
+        <p class="small">仍然较弱：{{ digest.still_weak.length ? digest.still_weak.join('、') : '目前没有明显弱项' }}</p>
+        <p class="task-reason">下一步：{{ digest.next_practice }}</p>
       </div>
 
       <div class="card">

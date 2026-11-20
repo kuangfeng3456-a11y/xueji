@@ -126,13 +126,20 @@ def test_repeated_mistakes_insert_remedial_task(api, auth, goal, imported_points
     }
     first = api("POST", f"/api/goals/{goal['id']}/mistakes", token=token, json=payload)
     assert first.status_code == 201
+    first_tasks = [
+        task for task in first.json()["replan"]["tasks"]
+        if task["type"] == "remedial" and task["kp_id"] == kp["id"]
+    ]
+    assert len(first_tasks) == 1
+    assert first_tasks[0]["duration_min"] == 20
+
     second = api("POST", f"/api/goals/{goal['id']}/mistakes", token=token, json=payload)
     assert second.status_code == 201
-
-    kinds = [change["kind"] for change in second.json()["replan"]["changes"]]
-    assert "insert_remedial" in kinds
-    remedial = second.json()["replan"]["tasks"]
-    assert any(task["type"] == "remedial" and task["duration_min"] == 20 for task in remedial)
+    second_tasks = [
+        task for task in second.json()["replan"]["tasks"]
+        if task["type"] == "remedial" and task["kp_id"] == kp["id"]
+    ]
+    assert len(second_tasks) == 1
 
 
 def test_answer_updates_mastery(api, auth, goal, imported_points):

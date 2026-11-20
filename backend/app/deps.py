@@ -89,3 +89,16 @@ def require_superadmin(user: User = Depends(get_current_user)) -> User:
             detail="需要超级管理员权限",
         )
     return user
+
+
+def is_staff(user: User) -> bool:
+    """教师、教务或超级管理员。学生主路径不使用这组能力。"""
+    if getattr(user, "is_superadmin", False):
+        return True
+    return (getattr(user, "role", None) or "student") in ("teacher", "academic")
+
+
+def require_staff(user: User = Depends(get_current_user)) -> User:
+    if not is_staff(user):
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="仅教师或教务人员可以访问")
+    return user

@@ -70,6 +70,7 @@ def register(
         password_hash=hash_password(payload.password),
         nickname=payload.nickname or payload.username,
         school=payload.school,
+        role=payload.role or "student",
     )
     db.add(user)
     db.commit()

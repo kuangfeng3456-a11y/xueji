@@ -10,7 +10,7 @@
 import asyncio
 import json
 from datetime import date
-from typing import AsyncIterator, Dict, List
+from typing import AsyncIterator, Dict, List, Optional
 
 from fastapi import APIRouter, Depends
 from fastapi.responses import StreamingResponse
@@ -24,7 +24,9 @@ from ..llm import llm
 from ..models import Goal, KnowledgePoint, Mastery, Task, User
 from ..prompts.library import build_messages, check_envelope, parse_json_strict
 from ..services import tutor
+from ..services.coach_memory import history_for
 from ..services.lsv import build_lsv
+from ..services.qa import rule_answer_with_history
 
 router = APIRouter(tags=["流式输出"])
 
@@ -37,6 +39,8 @@ class SocraticStreamIn(BaseModel):
 
 class VoiceStreamIn(BaseModel):
     question: str = Field(default="", max_length=500)
+    session_id: Optional[int] = None
+    goal_id: Optional[int] = None
 
 
 def _sse(event: str, data: Dict) -> str:
@@ -281,18 +285,24 @@ async def voice_stream(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    """P15 语音教练的 SSE 版本（文档 7.1：语音教练使用流式）。"""
-    fallback = "我没听清，可以再说一次吗？"
+    """P15 语音教练的 SSE 版本。带 session_id 时把该会话最近对话放进提示词。"""
 
     async def generate() -> AsyncIterator[str]:
         with SessionLocal() as session:
             current_user = session.get(User, user.id)
-            goal = session.scalar(
-                select(Goal)
-                .where(Goal.user_id == user.id)
-                .order_by(Goal.created_at.desc())
-                .limit(1)
-            )
+            if payload.goal_id:
+                chosen = session.get(Goal, payload.goal_id)
+                goal = chosen if chosen and chosen.user_id == current_user.id else None
+            else:
+                goal = session.scalar(
+                    select(Goal)
+                    .where(Goal.user_id == user.id)
+                    .order_by(Goal.created_at.desc())
+                    .limit(1)
+                )
+            history = history_for(session, current_user.id, payload.session_id)
+            ruled = rule_answer_with_history(session, current_user, goal, payload.question, history)
+            spoken = ruled["answer"] or "我没听清，可以再说一次吗？"
             lsv = await asyncio.to_thread(build_lsv, session, current_user, goal) if goal else {}
             tasks = []
             if goal:
@@ -313,11 +323,11 @@ async def voice_stream(
                     {"type": "start_task", "label": "开始今日任务"},
                     {"type": "generate_quiz", "label": "生成随堂测"},
                 ],
-                "history_json": [],
+                "history_json": history,
                 "learner_state_json": lsv,
                 "rule_output_json": {"tasks_today": tasks, "readiness": lsv.get("readiness")},
                 "user_utterance": payload.question,
             }
-            async for chunk in _run_prompt_stream("P15", variables, fallback, current_user.id):
+            async for chunk in _run_prompt_stream("P15", variables, spoken, current_user.id):
                 yield chunk
     return _stream_response(generate())

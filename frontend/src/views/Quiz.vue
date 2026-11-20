@@ -8,6 +8,29 @@ import VocabLab from '../components/VocabLab.vue'
 import QuizMaterial from '../components/QuizMaterial.vue'
 
 const router = useRouter()
+const causeOptions = [
+  { key: 'concept', label: '概念不清' },
+  { key: 'method', label: '方法不会' },
+  { key: 'careless', label: '粗心' },
+  { key: 'time', label: '时间不够' }
+]
+
+function checkCause(item, key) {
+  notify(key === item.category ? `这道题的错因是「${item.category_label}」。` : `更接近「${item.category_label}」。`)
+}
+
+function askAbout(item) {
+  router.push({ path: '/today', query: { tab: 'voice', q: `这道题为什么错：${item.question}` } })
+}
+
+async function keepCard(item) {
+  try {
+    const data = await api.enqueueFlashcard(store.currentGoalId, { kp_id: item.kp_id, name: item.kp_name || '' })
+    notify(data.detail || '已加入今天的复习')
+  } catch (e) {
+    notify(e.message, true)
+  }
+}
 const points = ref([])
 const kpId = ref('')
 const count = ref(3)
@@ -675,7 +698,20 @@ watch(() => store.currentGoalId, loadPoints, { immediate: true })
               干扰项诊断：{{ item.misconception }}
             </div>
             <div class="task-reason" style="margin-top: 8px">
-              {{ item.explanation || '暂无解析' }}
+              {{ item.explanation || '先看正确选项和错因，再决定要不要追问。' }}
+            </div>
+            <div class="row" style="gap: 8px; margin-top: 8px; flex-wrap: wrap">
+              <button
+                v-for="cause in causeOptions"
+                :key="cause.key"
+                class="btn btn-ghost btn-sm"
+                type="button"
+                @click="checkCause(item, cause.key)"
+              >
+                {{ cause.label }}
+              </button>
+              <button class="btn btn-sm" type="button" @click="askAbout(item)">追问教练</button>
+              <button v-if="item.kp_id" class="btn btn-ghost btn-sm" type="button" @click="keepCard(item)">加入今日复习</button>
             </div>
           </div>
         </div>
@@ -691,9 +727,9 @@ watch(() => store.currentGoalId, loadPoints, { immediate: true })
         </div>
 
         <div class="row" style="margin-top: 16px">
-          <button class="btn" :disabled="generating" @click="backToSetup">重新选题</button>
-          <button class="btn btn-ghost" @click="router.push('/mistakes')">去错题本</button>
-          <button class="btn btn-ghost" @click="router.push('/plan')">查看计划</button>
+          <button class="btn" :disabled="generating" @click="backToSetup">再做一组</button>
+          <button class="btn btn-ghost" @click="router.push('/today')">回到今日</button>
+          <button class="btn btn-ghost" @click="router.push('/practice?tab=mistakes')">去错题本</button>
         </div>
       </div>
     </div>

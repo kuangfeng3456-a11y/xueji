@@ -330,6 +330,17 @@ export const api = {
   cloudServices: () => request('/cloud/services'),
   ocrExtract: (formData) => request('/cloud/ocr/extract', { method: 'POST', body: formData, timeout: 60000 }),
   sisSynthesize: (formData) => request('/cloud/sis/synthesize', { method: 'POST', body: formData }),
+  sisRecognize: (formData) => request('/cloud/sis/recognize', { method: 'POST', body: formData, timeout: 60000 }),
+  coachSessions: () => request('/coach/sessions'),
+  createCoachSession: (body) => request('/coach/sessions', { method: 'POST', body }),
+  coachSession: (id) => request(`/coach/sessions/${id}`),
+  coachMessage: (id, body) =>
+    request(`/coach/sessions/${id}/messages`, { method: 'POST', body, timeout: LONG_TIMEOUT }),
+  closeCoach: (id) => request(`/coach/sessions/${id}/close`, { method: 'POST' }),
+  enqueueFlashcard: (goalId, body) =>
+    request(`/goals/${goalId}/flashcards/enqueue`, { method: 'POST', body }),
+  coachVoice: (id, formData) =>
+    request(`/coach/sessions/${id}/voice`, { method: 'POST', body: formData, timeout: 60000 }),
   testIntegrations: (force = false) => request(`/integrations/test?force=${force}`, { method: 'POST' }),
   knowledgeBaseProbe: () => request('/knowledge-base/probe'),
   knowledgeLookup: (term) => request(`/knowledge-base/lookup?term=${encodeURIComponent(term)}`),
@@ -349,6 +360,19 @@ export const api = {
   applySkillPackage: (slug, goalId) =>
     request(`/skill-packages/${slug}/apply`, { method: 'POST', body: { goal_id: goalId } }),
   createSkillPackage: (body) => request('/skill-packages', { method: 'POST', body }),
+  reviewSkillPackages: (mine = false) => request(`/skill-packages/review?mine=${mine ? 'true' : 'false'}`),
+  reviewSkillPackage: (slug, body) => request(`/skill-packages/${slug}/review`, { method: 'POST', body }),
+  shareSkillPackage: (slug) => request(`/skill-packages/${slug}/share`, { method: 'POST' }),
+  redeemSkillPackage: (body) => request('/skill-packages/redeem', { method: 'POST', body }),
+  campusWorkbench: () => request('/campus/workbench'),
+  campusCompare: (ids) => request(`/campus/classes/compare?ids=${encodeURIComponent(ids)}`),
+  campusBridge: () => request('/campus/bridge'),
+  campusSync: () => request('/campus/bridge/sync', { method: 'POST' }),
+  campusPush: (classId) => request('/campus/bridge/push', { method: 'POST', body: { class_id: classId } }),
+  classAssignments: (classId) => request(`/campus/classes/${classId}/assignments`),
+  assignPackage: (classId, slug) =>
+    request(`/campus/classes/${classId}/assignments`, { method: 'POST', body: { slug } }),
+  campusLogs: () => request('/campus/bridge/logs'),
 
   vocabSession: (goalId, kpId, limit = 20) =>
     request(`/goals/${goalId}/vocab?kp_id=${kpId}&limit=${limit}`),

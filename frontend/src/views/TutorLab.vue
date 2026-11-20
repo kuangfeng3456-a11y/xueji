@@ -78,7 +78,7 @@ async function askStream() {
         streamStage.value = ''
       },
       onFallback: (data) => {
-        streamFallback.value = data.text || '规则兜底'
+        streamFallback.value = data.text || '暂时没有生成新的提示，请换种说法再试一次'
         streamStage.value = ''
       }
     })

@@ -10,6 +10,8 @@ backend/xueji.db
 backend/smoke.db
 backend/*.db
 backend/uploads/
+backend/models/*.onnx
+*.onnx
 backend/.pytest-tmp/
 frontend/node_modules/
 frontend/dist/

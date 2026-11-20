@@ -163,3 +163,104 @@ async def answer_question(
             answer = text.strip()
             source = "llm"
     return {"answer": answer, "source": source, "suggestions": suggestions}
+
+
+_FOLLOWUP_CUES = ("为什么", "为何", "然后", "继续", "详细", "具体", "展开", "什么意思", "怎么做", "再说", "接着")
+
+
+def is_followup(question: str) -> bool:
+    text = (question or "").strip()
+    if not text:
+        return False
+    if text in ("为什么", "为何", "然后呢", "继续", "展开", "具体一点", "怎么做", "再说一遍", "接着说"):
+        return True
+    return len(text) <= 16 and any(cue in text for cue in _FOLLOWUP_CUES)
+
+
+def _followup_reason(question: str) -> str:
+    text = question or ""
+    if any(word in text for word in ("今天", "学什么", "任务", "安排", "干什么")):
+        return "这些任务按知识点权重、当前掌握度和距考试天数排出来，所以先做还没完成的。"
+    if any(word in text for word in ("薄弱", "弱项", "短板", "最差")):
+        return "它们的掌握度最低，先补这里，后面的练习才不会反复错在同一处。"
+    if any(word in text for word in ("几天", "倒计时", "多久")):
+        return "剩余天数会提高复习比重，离考试越近，复习会排得更密。"
+    if any(word in text for word in ("错题", "错因")):
+        return "错因决定补法：方法不会先看步骤，概念不清先回到定义。"
+    if any(word in text for word in ("复习", "间隔", "遗忘")):
+        return "答错会把复习间隔拉回 1 天，到期且不稳的内容要先复习。"
+    return "这个结论来自你已经产生的学习记录。"
+
+
+def rule_answer_with_history(
+    db: Session,
+    user: User,
+    goal: Optional[Goal],
+    question: str,
+    history: Optional[list] = None,
+    today: Optional[date] = None,
+) -> dict:
+    """把追问接回上一问的事实，避免连续对话丢失上下文。"""
+    prior = [item for item in (history or []) if str(item.get("text") or "").strip()]
+    asked = (question or "").strip()
+    follow = False
+    last_user = ""
+    last_coach = ""
+    if is_followup(asked) and prior:
+        for item in reversed(prior):
+            text = str(item.get("text") or "").strip()
+            if item.get("role") == "user" and text and not last_user:
+                last_user = text
+            if item.get("role") == "coach" and text and not last_coach:
+                last_coach = text
+            if last_user and last_coach:
+                break
+        if last_user:
+            follow = True
+    base_question = last_user if follow else asked
+    answer, suggestions = build_rule_answer(db, user, goal, base_question, today)
+    if follow:
+        brief = (last_coach or answer).strip().replace("\n", " ")
+        if len(brief) > 80:
+            brief = brief[:80] + "…"
+        answer = f"接着上一问「{last_user}」。上一轮是：{brief} {_followup_reason(last_user)}"
+    return {
+        "answer": answer,
+        "source": "rule",
+        "suggestions": suggestions[:4],
+        "followup": follow,
+    }
+
+
+async def answer_with_history(
+    db: Session,
+    user: User,
+    goal: Optional[Goal],
+    question: str,
+    history: Optional[list] = None,
+    today: Optional[date] = None,
+) -> dict:
+    ruled = rule_answer_with_history(db, user, goal, question, history, today)
+    answer = ruled["answer"]
+    source = "rule"
+    if llm.available and goal:
+        lines = []
+        for item in (history or [])[-8:]:
+            who = "学生" if item.get("role") == "user" else "教练"
+            lines.append(f"{who}：{str(item.get('text') or '')[:200]}")
+        system = (
+            "你是学迹学习教练。请基于给定事实和对话记录回答，80 字以内，"
+            "保留所有数字，不得编造不存在的任务或数据，语气耐心、具体、可执行。只输出中文回答。"
+        )
+        prompt = (
+            "对话记录：\n"
+            + ("\n".join(lines) if lines else "（没有更早的对话）")
+            + f"\n当前问题：{question}\n可用事实：{answer}"
+        )
+        text = await llm.chat(system, prompt, temperature=0.4, max_tokens=300)
+        if text:
+            answer = text.strip()
+            source = "llm"
+    ruled["answer"] = answer
+    ruled["source"] = source
+    return ruled

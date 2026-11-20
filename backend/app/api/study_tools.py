@@ -3,6 +3,7 @@ import time
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
+from pydantic import BaseModel, Field
 from sqlalchemy import case, func, select
 from sqlalchemy.orm import Session
 
@@ -24,6 +25,7 @@ from ..schemas import (
 )
 from ..services.ai_content import ai_flashcard_explanation
 from ..services.flashcards import build_deck, review_card
+from ..services.practice_loop import enqueue_point, release_practice, steer_today
 from ..services import question_bank, quiz_material, tiku_bank
 from ..services import quiz as quiz_service
 from ..services.quiz import (
@@ -342,6 +344,25 @@ async def explain_flashcard(
     return FlashcardExplainOut(kp_id=point.id, **data)
 
 
+class EnqueueIn(BaseModel):
+    kp_id: Optional[int] = None
+    name: str = Field(default="", max_length=64)
+
+
+@router.post("/goals/{goal_id}/flashcards/enqueue")
+def enqueue_flashcard(
+    goal_id: int,
+    payload: EnqueueIn,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+) -> dict:
+    goal = get_user_goal(goal_id, user, db)
+    try:
+        return enqueue_point(db, user, goal, payload.kp_id, payload.name)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+
+
 @router.post("/goals/{goal_id}/flashcards/{kp_id}/review", response_model=FlashcardReviewOut)
 def review_flashcard(
     goal_id: int,
@@ -352,11 +373,16 @@ def review_flashcard(
 ) -> FlashcardReviewOut:
     goal = get_user_goal(goal_id, user, db)
     try:
-        return FlashcardReviewOut(
-            **review_card(db, user.id, goal.id, kp_id, payload.remembered)
-        )
+        reviewed = review_card(db, user.id, goal.id, kp_id, payload.remembered)
     except ValueError as exc:
         raise HTTPException(status_code=404, detail=str(exc))
+    point = db.get(KnowledgePoint, kp_id)
+    if point:
+        if payload.remembered and reviewed["mastery"] >= 0.5:
+            release_practice(db, user, goal, point)
+        elif not payload.remembered:
+            steer_today(db, user, goal, point, f"「{point.name}」这次没记住，今天继续练。")
+    return FlashcardReviewOut(**reviewed)
 
 
 @router.post("/goals/{goal_id}/quiz/generate", response_model=QuizGenerateOut)

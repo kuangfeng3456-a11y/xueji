@@ -1,0 +1,24 @@
+{
+  "string": [
+    {
+      "name": "module_desc",
+      "value": "学迹学习客户端"
+    },
+    {
+      "name": "EntryAbility_desc",
+      "value": "学迹"
+    },
+    {
+      "name": "EntryAbility_label",
+      "value": "学迹"
+    },
+    {
+      "name": "camera_reason",
+      "value": "用于拍摄错题，识别后填入错题本"
+    },
+    {
+      "name": "mic_reason",
+      "value": "用于向学习教练语音提问和跟读"
+    }
+  ]
+}

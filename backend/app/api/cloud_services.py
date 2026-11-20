@@ -17,6 +17,7 @@ from fastapi import APIRouter, Depends, File, Form, UploadFile
 from ..deps import get_current_user
 from ..models import User
 from ..services import cloud_services as cs
+from ..services.question_ocr import extract_question_image
 
 router = APIRouter(prefix="/cloud", tags=["华为云能力"])
 
@@ -47,7 +48,7 @@ async def ocr_extract(
             "detail": f"图片超过 {_MAX_IMAGE_BYTES // 1024 // 1024}MB 上限，未调用云服务",
             "text": "",
         }
-    result = cs.ocr_extract_text(raw, kind=kind)
+    result = extract_question_image(raw, kind=kind)
     result["filename"] = (file.filename or "")[:80]
     return result
 
@@ -71,6 +72,40 @@ def sis_synthesize(
     # 不把音频字节透传给接口层之外的存储；只报告是否就绪
     result["audio_ready"] = result.get("status") == cs.OK
     result.pop("audio_base64", None)
-    result.pop("audio_bytes", None)
     result["chars"] = len(clean)
+    if result.get("status") == cs.OK and result.get("audio_b64"):
+        result["fallback"] = ""
+        result["fallback_label"] = "云端语音合成"
+    else:
+        result["fallback"] = "device_speech"
+        result["fallback_label"] = "云端语音合成不可用，请改用本机朗读"
+        result.pop("audio_b64", None)
+    return result
+
+
+@router.post("/sis/recognize")
+async def sis_recognize(
+    file: UploadFile = File(...),
+    audio_format: str = Form("wav"),
+    sample_rate: int = Form(16000),
+    user: User = Depends(get_current_user),
+) -> dict:
+    """一句话识别。未配置或调用失败时 text 为空，并标明应改用本机语音或文字。"""
+    raw = await file.read()
+    if len(raw) > 8 * 1024 * 1024:
+        return {
+            "status": "error",
+            "detail": "音频超过 8MB 上限，未调用云服务",
+            "text": "",
+            "fallback": "device_or_text",
+            "fallback_label": "请缩短录音，或改用文字输入",
+        }
+    result = cs.sis_audio_to_text(raw, audio_format=audio_format or "wav", sample_rate=sample_rate or 16000)
+    result["text"] = result.get("text") or ""
+    if result.get("status") == cs.OK and result["text"]:
+        result["fallback"] = ""
+        result["fallback_label"] = "云端语音识别"
+    else:
+        result["fallback"] = "device_or_text"
+        result["fallback_label"] = "云端语音识别不可用，请改用本机语音或文字输入"
     return result

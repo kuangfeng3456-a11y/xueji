@@ -12,9 +12,11 @@ const router = useRouter()
 const sidebarOpen = ref(false)
 
 const activeSection = computed(() => route.meta.section || 'today')
-/** 侧栏只列商用可见的板块；内部工具区不进导航。 */
-const railSections = computed(() => visibleSections())
-const tabCount = (section) => visibleTabs(section).length
+const showInternal = computed(() => Boolean(store.user?.is_superadmin))
+const showCampus = computed(() => Boolean(store.user?.campus_access))
+/** 学生只看个人学习入口；教师与教务额外看到班级、工作台和教务对接。 */
+const railSections = computed(() => visibleSections(showInternal.value, showCampus.value))
+const tabCount = (section) => visibleTabs(section, showInternal.value, showCampus.value).length
 
 const activeMeta = computed(() => ({
   title: route.meta.title || '今日',

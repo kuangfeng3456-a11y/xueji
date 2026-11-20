@@ -29,6 +29,9 @@ import Panel from './views/Panel.vue'
 
 import ClassBoard from './views/ClassBoard.vue'
 import TeacherDesk from './views/TeacherDesk.vue'
+import ClassCompare from './views/ClassCompare.vue'
+import AcademicBridge from './views/AcademicBridge.vue'
+import SkillReview from './views/SkillReview.vue'
 import ParentReport from './views/ParentReport.vue'
 import Buddies from './views/Buddies.vue'
 import MindCare from './views/MindCare.vue'
@@ -44,8 +47,8 @@ import Integrations from './views/Integrations.vue'
  * 信息架构：商用版 5 个入口 + 1 个内部工具区。
  *
  * 每个标签带 audience 分级，决定它是否出现在导航里：
- *   core     —— 个人备考主流程，商业版对用户可见（默认）
- *   campus   —— 校园 B 端双线，教师/班主任/家长可见
+ *   core     —— 个人学习主流程，学生导航只显示这一层
+ *   campus   —— 教师与教务：班级看板、教师工作台、班级报表、教务对接
  *   internal —— 运营与研发工具，只保留深链，不进入导航
  *
  * 分级只控制「入口是否展示」，路由与页面代码全部保留：
@@ -126,6 +129,9 @@ export const SECTIONS = [
     tabs: [
       { key: 'class', label: '班级看板', component: ClassBoard, hint: '群体薄弱点与完成率', audience: 'campus' },
       { key: 'teacher', label: '教师工作台', component: TeacherDesk, hint: '分层教学建议', audience: 'campus' },
+      { key: 'compare', label: '班级报表', component: ClassCompare, hint: '对比多个班级的完成率与薄弱点', audience: 'campus' },
+      { key: 'academic', label: '教务对接', component: AcademicBridge, hint: '同步名册并回传班级摘要', audience: 'campus' },
+      { key: 'packages', label: '学科包审核', component: SkillReview, hint: '上传、审核并分享自定义学科包', audience: 'campus' },
       { key: 'parent', label: '家长报告', component: ParentReport, hint: '授权后的阶段摘要', audience: 'campus' },
       { key: 'buddies', label: '学习搭子', component: Buddies, hint: '好友打卡与连续天数', audience: 'internal' },
       { key: 'mind', label: '心理自评', component: MindCare, hint: '非诊断解读与求助渠道' },
@@ -152,19 +158,21 @@ export function tabAudience(tab) {
 }
 
 /** 该标签是否出现在导航里（隐藏的仍可通过深链访问）。 */
-export function isTabVisible(tab, showInternal = false) {
+export function isTabVisible(tab, showInternal = false, showCampus = false) {
   const audience = tabAudience(tab)
-  return AUDIENCES.includes(audience) || (showInternal && audience === 'internal')
+  if (audience === 'internal') return Boolean(showInternal)
+  if (audience === 'campus') return Boolean(showCampus)
+  return true
 }
 
-export function visibleTabs(section, showInternal = false) {
-  return (section?.tabs || []).filter((tab) => isTabVisible(tab, showInternal))
+export function visibleTabs(section, showInternal = false, showCampus = false) {
+  return (section?.tabs || []).filter((tab) => isTabVisible(tab, showInternal, showCampus))
 }
 
 /** 至少有一个可见标签的板块；全部隐藏的板块整块不进导航。 */
-export function visibleSections() {
+export function visibleSections(showInternal = false, showCampus = false) {
   return SECTIONS.filter(
-    (section) => section.audience !== 'internal' && visibleTabs(section).length > 0
+    (section) => section.audience !== 'internal' && visibleTabs(section, showInternal, showCampus).length > 0
   )
 }
 
@@ -201,6 +209,9 @@ export const LEGACY_ROUTES = {
   '/integrations': ['settings', 'integrations'],
   '/class': ['collab', 'class'],
   '/teacher': ['collab', 'teacher'],
+  '/compare': ['collab', 'compare'],
+  '/academic': ['collab', 'academic'],
+  '/skill-review': ['collab', 'packages'],
   '/parent': ['collab', 'parent'],
   '/buddies': ['collab', 'buddies'],
   '/mind-care': ['collab', 'mind'],
